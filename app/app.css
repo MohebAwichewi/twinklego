@@ -1,0 +1,431 @@
+/* ============================================
+   TwinkleGo – Auth Shell
+   ============================================ */
+.auth-shell { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+.auth-left {
+  position: relative; display: flex; flex-direction: column; justify-content: space-between;
+  padding: 36px 48px; background: linear-gradient(145deg, #0d2538, #163d5c); color: white; overflow: hidden;
+}
+.auth-left .logo { color: white; }
+.auth-hero-text h2 { font-size: 36px; line-height: 1.15; letter-spacing: -2px; margin: 0 0 14px; }
+.auth-hero-text p { color: #9bafbd; font-size: 14px; line-height: 1.7; max-width: 340px; margin: 0; }
+.auth-decor { position: absolute; inset: 0; pointer-events: none; }
+.auth-blob { position: absolute; border-radius: 50%; filter: blur(80px); }
+.auth-blob-1 { width: 300px; height: 300px; right: -60px; top: 40%; background: rgba(49,183,181,.18); }
+.auth-blob-2 { width: 200px; height: 200px; left: 20%; bottom: 10%; background: rgba(39,137,216,.14); }
+.auth-right { display: flex; align-items: center; justify-content: center; padding: 40px; background: #f8fbfc; }
+
+.auth-card { width: 100%; max-width: 420px; }
+.auth-card h1 { font-size: 28px; letter-spacing: -1.5px; margin: 10px 0 6px; }
+.auth-sub { color: var(--body); font-size: 13px; margin-bottom: 28px; }
+.auth-sub a { color: var(--blue); font-weight: 700; }
+.auth-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--teal-soft); color: var(--teal); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.auth-form input, .auth-form select, .auth-form textarea {
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; outline: none; transition: border-color .2s; background: white;
+}
+.auth-form input:focus, .auth-form select:focus, .auth-form textarea:focus { border-color: var(--blue); }
+.auth-btn { width: 100%; min-height: 48px; font-size: 14px; }
+.auth-link-btn { background: none; border: none; color: var(--body); font-size: 12px; cursor: pointer; padding: 4px 0; }
+.auth-link-btn:hover { color: var(--blue); }
+.auth-error { padding: 10px 14px; border-radius: 10px; background: #fef2f2; color: #dc2626; font-size: 12px; }
+.auth-success { padding: 10px 14px; border-radius: 10px; background: #f0fdf4; color: #16a34a; font-size: 12px; }
+.auth-back { margin-top: 24px; text-align: center; font-size: 12px; }
+.auth-back a { color: var(--body); }
+.auth-center { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.auth-icon-success { color: var(--teal); }
+.auth-icon-pending { color: var(--blue); }
+
+.auth-role-picker { border: 0; padding: 0; margin: 0; }
+.auth-role-picker legend { color: #42556b; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+.role-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; transition: all .2s; margin-bottom: 6px; }
+.role-option input { display: none; }
+.role-option.active { border-color: var(--teal); background: var(--teal-soft); }
+.role-option span { display: flex; flex-direction: column; gap: 2px; }
+.role-option strong { font-size: 12px; }
+.role-option small { color: var(--body); font-size: 10px; }
+
+/* ============================================
+   TwinkleGo – Dashboard Shell
+   ============================================ */
+.dash-shell { display: flex; min-height: 100vh; background: #f5f8fa; }
+.dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.dash-content { flex: 1; padding: 28px 36px 60px; overflow-y: auto; }
+.dash-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 80px 0; color: var(--body); font-size: 13px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Sidebar */
+.sidebar {
+  width: 240px; min-height: 100vh; padding: 20px 14px; background: white; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; justify-content: space-between; padding: 8px 6px 24px; }
+.sidebar-brand .logo { font-size: 17px; }
+.sidebar-brand .logo-mark { width: 28px; height: 28px; }
+.sidebar-close { display: none; background: none; border: 0; cursor: pointer; color: var(--body); }
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+  color: #526174; font-size: 13px; font-weight: 600; transition: all .15s; border: 0; background: none; cursor: pointer; width: 100%; text-align: left;
+}
+.sidebar-link:hover { background: #f0f5f7; color: var(--ink); }
+.sidebar-link.active { background: var(--sky); color: var(--blue); font-weight: 700; }
+.sidebar-foot { padding-top: 12px; border-top: 1px solid var(--line); }
+.logout-btn { color: var(--coral) !important; }
+.mobile-menu-btn { display: none; position: fixed; bottom: 20px; left: 20px; z-index: 50; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--ink); color: white; box-shadow: 0 6px 20px rgba(0,0,0,.2); cursor: pointer; }
+.sidebar-overlay { display: none; }
+
+/* Topbar */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; margin-bottom: 8px; }
+.topbar-greeting { font-size: 20px; letter-spacing: -.6px; margin: 0; font-weight: 700; }
+.topbar-greeting span { color: var(--teal); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-icon-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: white; cursor: pointer; display: grid; place-items: center; color: var(--body); transition: border-color .2s; }
+.topbar-icon-btn:hover { border-color: var(--blue); color: var(--blue); }
+.notif-badge { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--coral); color: white; font-size: 9px; font-weight: 800; display: grid; place-items: center; }
+.topbar-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+
+/* Availability Toggle */
+.avail-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: white; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.avail-on { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+.avail-off { color: var(--body); }
+
+/* Notification Panel */
+.notif-wrap { position: relative; }
+.notif-panel { position: absolute; right: 0; top: 48px; width: 340px; max-height: 400px; background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 15px 45px rgba(0,0,0,.12); z-index: 30; overflow: hidden; }
+.notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.notif-head strong { font-size: 13px; }
+.notif-mark-read { background: none; border: 0; color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; }
+.notif-list { max-height: 340px; overflow-y: auto; }
+.notif-item { display: flex; flex-direction: column; gap: 3px; padding: 12px 16px; border-bottom: 1px solid #f2f5f7; transition: background .15s; }
+.notif-item:hover { background: #f8fbfc; }
+.notif-item.unread { background: #f0f9ff; }
+.notif-item strong { font-size: 12px; }
+.notif-item small { color: var(--body); font-size: 10px; }
+.notif-item time { color: #9aa8b4; font-size: 9px; }
+.notif-empty { text-align: center; padding: 30px; color: var(--body); font-size: 12px; }
+
+/* ============================================
+   TwinkleGo – Dashboard Pages
+   ============================================ */
+.dash-page { max-width: 1100px; }
+.dash-page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 16px; }
+.dash-page-head h1 { font-size: 26px; letter-spacing: -1.2px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.dash-page-head p { color: var(--body); font-size: 13px; margin: 0; }
+.back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--body); font-size: 12px; margin-bottom: 8px; font-weight: 600; }
+.back-link:hover { color: var(--blue); }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+.stat-card { display: flex; align-items: center; gap: 14px; padding: 20px; border-radius: 16px; background: white; border: 1px solid var(--line); }
+.stat-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; }
+.stat-icon.blue { color: var(--blue); background: var(--sky); }
+.stat-icon.teal { color: var(--teal); background: var(--teal-soft); }
+.stat-icon.gold { color: #ce8c16; background: #fff7df; }
+.stat-icon.coral { color: var(--coral); background: #fff0eb; }
+.stat-card small { color: var(--body); font-size: 10px; font-weight: 600; display: block; }
+.stat-card strong { font-size: 22px; letter-spacing: -.5px; }
+
+/* Dashboard Grid */
+.dash-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+.dash-section { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.dash-section h2 { font-size: 16px; letter-spacing: -.4px; margin: 0; }
+.dash-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+
+/* Errand List */
+.errand-list { display: flex; flex-direction: column; }
+.errand-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f2f5f7; transition: background .15s; }
+.errand-row:last-child { border: 0; }
+.errand-row:hover { background: #f8fbfc; }
+.errand-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.errand-status-dot.posted { background: var(--gold); }
+.errand-status-dot.accepted { background: var(--blue); }
+.errand-status-dot.in_progress { background: var(--teal); }
+.errand-status-dot.completed { background: #16a34a; }
+.errand-status-dot.cancelled { background: var(--coral); }
+.errand-status-dot.disputed { background: #dc2626; }
+.errand-row-main { flex: 1; }
+.errand-row-main strong { font-size: 13px; display: block; }
+.errand-row-main small { color: var(--body); font-size: 11px; }
+.errand-row-side { text-align: right; }
+.errand-time { color: #9aa8b4; font-size: 10px; }
+
+/* Status Badges */
+.status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: capitalize; }
+.status-badge.posted { background: #fff7df; color: #a16207; }
+.status-badge.accepted { background: var(--sky); color: var(--blue); }
+.status-badge.in_progress { background: var(--teal-soft); color: var(--teal); }
+.status-badge.completed { background: #f0fdf4; color: #16a34a; }
+.status-badge.cancelled { background: #fef2f2; color: #dc2626; }
+.status-badge.disputed { background: #fef2f2; color: #dc2626; }
+.status-badge.lg { padding: 6px 14px; font-size: 12px; }
+
+/* Tabs */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: white; border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+.tab-btn { padding: 8px 14px; border: 0; border-radius: 8px; background: none; font-size: 11px; font-weight: 700; color: var(--body); cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.tab-btn.active { background: var(--sky); color: var(--blue); }
+.tab-count { padding: 1px 6px; border-radius: 999px; background: #e9eff2; font-size: 9px; }
+
+/* Empty State */
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px; color: var(--body); text-align: center; }
+.empty-state p { font-size: 13px; margin: 0; }
+.empty-state small { font-size: 11px; }
+
+/* Quick Actions */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.quick-action { display: flex; align-items: center; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 12px; font-weight: 700; color: var(--ink); transition: all .15s; }
+.quick-action:hover { border-color: var(--blue); background: var(--sky); color: var(--blue); }
+.verify-cta { padding: 16px; border: 1px dashed var(--gold); border-radius: 12px; background: #fffdf5; }
+.verify-cta strong { font-size: 13px; display: block; margin-bottom: 4px; }
+.verify-cta p { color: var(--body); font-size: 11px; margin: 0 0 12px; }
+
+/* ============================================
+   TwinkleGo – Profile & Verification
+   ============================================ */
+.profile-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+.profile-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+.profile-avatar { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.avatar-circle { width: 56px; height: 56px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); display: grid; place-items: center; font-size: 18px; font-weight: 800; flex-shrink: 0; }
+.avatar-circle.sm { width: 40px; height: 40px; font-size: 14px; }
+.avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--sky); color: var(--blue); display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.profile-meta { display: flex; flex-direction: column; gap: 4px; }
+.profile-meta strong { font-size: 16px; letter-spacing: -.3px; }
+.role-tag { color: var(--body); font-size: 11px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; width: fit-content; }
+.badge.sm { padding: 2px 6px; font-size: 9px; }
+.badge-success { background: #f0fdf4; color: #16a34a; }
+.badge-pending { background: #fff7df; color: #a16207; }
+.badge-error { background: #fef2f2; color: #dc2626; }
+
+.profile-form { display: flex; flex-direction: column; gap: 14px; }
+.profile-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.profile-form label svg { display: inline; margin-right: 4px; vertical-align: middle; }
+.profile-form input, .profile-form select, .profile-form textarea {
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; outline: none; transition: border-color .2s;
+}
+.profile-form input:focus { border-color: var(--blue); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-section-title { font-size: 13px; color: var(--body); margin: 8px 0 0; display: flex; align-items: center; gap: 6px; }
+.form-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.save-confirm { color: #16a34a; font-size: 12px; font-weight: 700; }
+.profile-sidebar { display: flex; flex-direction: column; gap: 16px; }
+.info-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.info-card h3 { font-size: 14px; margin: 0 0 12px; }
+.info-card dl { margin: 0; }
+.info-card dt { color: var(--body); font-size: 10px; font-weight: 600; margin-top: 10px; }
+.info-card dd { margin: 2px 0 0; font-size: 13px; font-weight: 600; }
+.capitalize { text-transform: capitalize; }
+
+/* Verification */
+.verify-banner { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; }
+.verify-success { background: #f0fdf4; color: #16a34a; }
+.verify-pending { background: #fff7df; color: #a16207; }
+.verify-error { background: #fef2f2; color: #dc2626; }
+.verify-banner strong { display: block; font-size: 14px; }
+.verify-banner small { color: inherit; opacity: .7; font-size: 11px; }
+.verify-done { text-align: center; padding: 60px 20px; background: white; border: 1px solid var(--line); border-radius: 16px; color: var(--teal); }
+.verify-done h2 { margin: 16px 0 8px; font-size: 22px; color: var(--ink); }
+.verify-done p { color: var(--body); font-size: 13px; }
+.verify-form-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+.verify-form-card h2 { font-size: 18px; margin: 0 0 20px; display: flex; align-items: center; gap: 8px; }
+.verify-form { display: flex; flex-direction: column; gap: 14px; }
+.verify-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.verify-form select, .verify-form input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; outline: none; }
+.upload-zone { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px; border: 2px dashed var(--line); border-radius: 14px; color: var(--body); text-align: center; position: relative; }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-zone p { margin: 0; font-size: 13px; font-weight: 600; }
+.upload-zone small { font-size: 10px; }
+
+/* ============================================
+   TwinkleGo – Errand Form
+   ============================================ */
+.form-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 28px; max-width: 680px; }
+.errand-form { display: flex; flex-direction: column; gap: 16px; }
+.form-step h3 { font-size: 18px; letter-spacing: -.5px; margin: 0 0 16px; }
+.category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.category-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; border: 1px solid var(--line); border-radius: 12px; background: white; cursor: pointer; transition: all .15s; font-size: 11px; font-weight: 700; }
+.category-card.active { border-color: var(--blue); background: var(--sky); }
+.category-card.coral.active { border-color: var(--coral); background: #fff0eb; }
+.category-card.teal.active { border-color: var(--teal); background: var(--teal-soft); }
+.category-card.gold.active { border-color: var(--gold); background: #fff7df; }
+.errand-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.errand-form input, .errand-form textarea, .errand-form select { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; outline: none; }
+.errand-form input:focus, .errand-form textarea:focus { border-color: var(--blue); }
+.text-btn { background: none; border: 0; color: var(--blue); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 0; }
+.text-btn.danger { color: var(--coral); }
+.coords-hint { color: var(--teal); font-size: 10px; }
+.distance-estimate { display: flex; gap: 20px; padding: 14px 16px; background: var(--sky); border-radius: 12px; font-size: 12px; }
+.distance-estimate strong { color: var(--blue); }
+.form-step-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.review-card { background: #f8fbfc; border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.review-card dl { margin: 0; display: grid; grid-template-columns: 120px 1fr; gap: 8px; font-size: 13px; }
+.review-card dt { color: var(--body); font-weight: 600; }
+.review-card dd { margin: 0; }
+.price-big { color: var(--blue) !important; font-size: 20px !important; font-weight: 800 !important; letter-spacing: -.5px; }
+
+/* ============================================
+   TwinkleGo – Errand Detail
+   ============================================ */
+.status-timeline { display: flex; gap: 0; margin-bottom: 28px; padding: 16px 20px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+.timeline-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
+.timeline-step:before { content: ""; position: absolute; top: 10px; left: 50%; right: -50%; height: 2px; background: var(--line); z-index: 0; }
+.timeline-step:last-child:before { display: none; }
+.timeline-step.done:before { background: var(--teal); }
+.timeline-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); background: white; z-index: 1; }
+.timeline-step.done .timeline-dot { border-color: var(--teal); background: var(--teal); }
+.timeline-step.current .timeline-dot { box-shadow: 0 0 0 4px var(--teal-soft); }
+.timeline-step span { font-size: 10px; font-weight: 700; color: var(--body); text-transform: capitalize; }
+.timeline-step.done span { color: var(--teal); }
+
+.errand-detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+.errand-detail-main { display: flex; flex-direction: column; gap: 16px; }
+.errand-detail-side { display: flex; flex-direction: column; gap: 16px; }
+.detail-card { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.detail-card h3 { font-size: 14px; margin: 0 0 12px; }
+.detail-card p { color: var(--body); font-size: 13px; line-height: 1.7; margin: 0; }
+.detail-meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin-top: 14px; font-size: 13px; }
+.detail-meta dt { color: var(--body); font-weight: 600; }
+.detail-meta dd { margin: 0; font-weight: 600; }
+.location-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.location-row div { display: flex; flex-direction: column; gap: 2px; }
+.location-row small { color: var(--body); font-size: 10px; }
+.location-row strong { font-size: 13px; }
+.detail-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+.user-mini { display: flex; align-items: center; gap: 10px; }
+.user-mini div:last-child { display: flex; flex-direction: column; gap: 3px; }
+.user-mini strong { font-size: 13px; }
+.user-mini small { color: var(--body); font-size: 11px; }
+
+/* ============================================
+   TwinkleGo – Runners
+   ============================================ */
+.runners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.runner-card-full { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.runner-card-top { display: flex; align-items: center; gap: 12px; }
+.runner-card-top div:nth-child(2) { flex: 1; }
+.runner-card-top strong { font-size: 14px; display: block; }
+.runner-meta { display: flex; gap: 12px; color: var(--body); font-size: 11px; }
+.runner-meta span { display: flex; align-items: center; gap: 3px; }
+.avail-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); display: grid; place-items: center; }
+
+/* ============================================
+   TwinkleGo – Wallet
+   ============================================ */
+.wallet-overview { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-bottom: 28px; }
+.wallet-balance-card { background: linear-gradient(135deg, var(--blue), var(--teal)); color: white; padding: 28px; border-radius: 16px; }
+.wallet-balance-card small { font-size: 11px; opacity: .8; display: block; }
+.wallet-balance-card strong { font-size: 36px; letter-spacing: -2px; display: block; margin: 6px 0 18px; }
+.wallet-actions-row { display: flex; gap: 8px; }
+.wallet-action-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; border: 0; background: rgba(255,255,255,.2); color: white; font-size: 12px; font-weight: 700; cursor: pointer; }
+.wallet-action-btn.outline { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.3); }
+.wallet-stats { display: flex; flex-direction: column; gap: 10px; }
+.wallet-stat { display: flex; align-items: center; gap: 12px; padding: 18px 20px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+.wallet-stat small { color: var(--body); font-size: 10px; display: block; }
+.wallet-stat strong { font-size: 18px; letter-spacing: -.5px; }
+.text-teal { color: var(--teal) !important; }
+.text-coral { color: var(--coral) !important; }
+
+.transaction-list { display: flex; flex-direction: column; }
+.transaction-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f2f5f7; }
+.transaction-row:last-child { border: 0; }
+.tx-icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+.tx-icon.teal { background: var(--teal-soft); color: var(--teal); }
+.tx-icon.coral { background: #fff0eb; color: var(--coral); }
+.tx-icon.blue { background: var(--sky); color: var(--blue); }
+.tx-main { flex: 1; }
+.tx-main strong { font-size: 13px; display: block; }
+.tx-main small { color: var(--body); font-size: 11px; }
+.tx-side { text-align: right; }
+.tx-side strong { font-size: 14px; display: block; }
+.tx-side time { color: #9aa8b4; font-size: 10px; }
+
+/* ============================================
+   TwinkleGo – Review Form
+   ============================================ */
+.review-form-card { max-width: 520px; }
+.review-form { display: flex; flex-direction: column; gap: 16px; }
+.review-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.review-form textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; outline: none; resize: vertical; }
+.star-picker { display: flex; align-items: center; gap: 6px; justify-content: center; margin-bottom: 8px; }
+.star-btn { background: none; border: 0; color: #dce8ee; cursor: pointer; transition: color .15s; padding: 2px; }
+.star-btn.active { color: var(--gold); }
+.star-label { margin-left: 10px; font-size: 13px; font-weight: 700; color: var(--body); }
+
+/* Dispute Form */
+.dispute-form { display: flex; flex-direction: column; gap: 14px; }
+.dispute-form label { display: flex; flex-direction: column; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.dispute-form select, .dispute-form input, .dispute-form textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; outline: none; }
+
+/* ============================================
+   TwinkleGo – Admin
+   ============================================ */
+.admin-sidebar { background: #112d42; border: 0; }
+.admin-sidebar .logo { color: white; }
+.admin-sidebar .logo strong { color: #7ad4ce; }
+.admin-sidebar .sidebar-link { color: #9eb1bf; }
+.admin-sidebar .sidebar-link:hover { background: rgba(255,255,255,.06); color: white; }
+.admin-sidebar .sidebar-link.active { background: rgba(49,183,181,.15); color: #7ad4ce; }
+.admin-sidebar .sidebar-foot { border-color: rgba(255,255,255,.1); }
+
+.admin-table { display: flex; flex-direction: column; background: white; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.admin-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #f2f5f7; flex-wrap: wrap; }
+.admin-row:last-child { border: 0; }
+.admin-row-main { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.admin-row-main strong { font-size: 13px; display: block; }
+.admin-row-main small { color: var(--body); font-size: 11px; display: block; }
+.admin-row-main p { margin: 4px 0 0; font-size: 12px; color: var(--body); }
+.admin-row-actions { display: flex; gap: 6px; }
+.admin-row-badges { display: flex; gap: 4px; }
+.icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: white; cursor: pointer; display: grid; place-items: center; transition: all .15s; }
+.icon-btn.success:hover { background: #f0fdf4; color: #16a34a; border-color: #16a34a; }
+.icon-btn.danger:hover { background: #fef2f2; color: #dc2626; border-color: #dc2626; }
+.icon-btn:disabled { opacity: .5; }
+.button-outline { background: white !important; color: var(--ink) !important; border: 1px solid var(--line) !important; box-shadow: none !important; }
+.button-outline:hover { border-color: var(--blue) !important; color: var(--blue) !important; }
+
+.resolve-form { display: flex; gap: 6px; width: 100%; margin-top: 8px; }
+.resolve-form input { flex: 1; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; outline: none; }
+.resolve-form button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--teal); background: var(--teal-soft); color: var(--teal); font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.resolution-text { color: var(--teal); font-size: 11px; margin-top: 4px; width: 100%; }
+.dispute-reason { color: var(--body); font-size: 12px; line-height: 1.6; }
+
+.search-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: white; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; }
+.search-bar input { flex: 1; border: 0; outline: 0; font-size: 13px; }
+.search-bar svg { color: var(--body); }
+
+/* ============================================
+   TwinkleGo – Landing Nav Updates
+   ============================================ */
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.nav-auth-link { color: var(--blue); font-size: 13px; font-weight: 700; }
+.nav-auth-link:hover { text-decoration: underline; }
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 900px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-left { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .errand-detail-grid { grid-template-columns: 1fr; }
+  .wallet-overview { grid-template-columns: 1fr; }
+  .category-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .dash-content { padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: -260px; z-index: 100; transition: left .3s; box-shadow: none; }
+  .sidebar-open { left: 0; box-shadow: 6px 0 30px rgba(0,0,0,.15); }
+  .sidebar-close { display: block; }
+  .sidebar-overlay { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 99; }
+  .mobile-menu-btn { display: grid; place-items: center; }
+  .dash-page-head { flex-direction: column; }
+  .category-grid { grid-template-columns: 1fr 1fr; }
+  .runners-grid { grid-template-columns: 1fr; }
+}
