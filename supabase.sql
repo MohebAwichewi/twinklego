@@ -487,12 +487,10 @@ insert into storage.buckets (id, name, public)
 values ('verifications', 'verifications', true)
 on conflict (id) do nothing;
 
--- Enable RLS on storage.objects if not already enabled
-alter table storage.objects enable row level security;
-
 -- Drop existing policies if they exist to avoid duplication
 drop policy if exists "Allow authenticated uploads to verifications" on storage.objects;
 drop policy if exists "Allow users and admins to view verifications" on storage.objects;
+
 
 -- Create policy to allow authenticated users to upload their verification IDs
 create policy "Allow authenticated uploads to verifications" on storage.objects
