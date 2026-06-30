@@ -481,3 +481,32 @@ begin
   return target;
 end;
 $$;
+
+-- Storage Bucket Setup for ID Verifications
+insert into storage.buckets (id, name, public)
+values ('verifications', 'verifications', true)
+on conflict (id) do nothing;
+
+-- Enable RLS on storage.objects if not already enabled
+alter table storage.objects enable row level security;
+
+-- Drop existing policies if they exist to avoid duplication
+drop policy if exists "Allow authenticated uploads to verifications" on storage.objects;
+drop policy if exists "Allow users and admins to view verifications" on storage.objects;
+
+-- Create policy to allow authenticated users to upload their verification IDs
+create policy "Allow authenticated uploads to verifications" on storage.objects
+  for insert to authenticated with check (
+    bucket_id = 'verifications'
+  );
+
+-- Create policy to allow users to view their own IDs and admins to view all IDs
+create policy "Allow users and admins to view verifications" on storage.objects
+  for select to authenticated using (
+    bucket_id = 'verifications'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or exists (select 1 from public.profiles where id = auth.uid() and is_admin)
+    )
+  );
+

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Verification } from "@/lib/types";
 import { ArrowLeft, Upload, Loader2, ShieldCheck, BadgeCheck, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase";
 
 const idTypes = [
   { value: "national_id", label: "National ID Card (NIN)" },
@@ -18,11 +19,18 @@ export default function VerifyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [idType, setIdType] = useState("national_id");
   const [idNumber, setIdNumber] = useState("");
-  const [idImage, setIdImage] = useState<string>("");
+  const [idFile, setIdFile] = useState<File | null>(null);
+  const [idImageName, setIdImageName] = useState<string>("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setUserId(data.user.id);
+    });
+
     fetch("/api/verify").then(r => r.json()).then(data => {
       setVerification(data);
       setLoading(false);
@@ -33,15 +41,39 @@ export default function VerifyPage() {
     e.preventDefault();
     setSubmitting(true);
     setError("");
-    if (!idImage) {
+
+    if (!idFile) {
       setSubmitting(false);
-      setError("Please upload a clear photo of your ID.");
+      setError("Please select a clear photo of your ID.");
       return;
     }
+
+    const supabase = createClient();
+
+    // 1. Upload to Supabase Storage verifications bucket
+    const fileExt = idFile.name.split(".").pop();
+    const filePath = `${userId || "anonymous"}/${Date.now()}.${fileExt}`;
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("verifications")
+      .upload(filePath, idFile, { upsert: true });
+
+    if (uploadError) {
+      setSubmitting(false);
+      setError(`Failed to upload ID photo: ${uploadError.message}`);
+      return;
+    }
+
+    // 2. Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from("verifications")
+      .getPublicUrl(filePath);
+
+    // 3. Post to verify API
     const res = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_type: idType, id_number: idNumber, id_image_url: idImage }),
+      body: JSON.stringify({ id_type: idType, id_number: idNumber, id_image_url: publicUrl }),
     });
     const data = await res.json();
     setSubmitting(false);
@@ -102,7 +134,7 @@ export default function VerifyPage() {
             <div className="upload-zone">
               <Upload size={24} />
               <p>Upload a clear photo of your ID</p>
-              <small>{idImage ? "ID photo attached" : "JPG or PNG, max 5MB"}</small>
+              <small>{idImageName ? `Selected: ${idImageName}` : "JPG or PNG, max 5MB"}</small>
               <input
                 type="file"
                 accept="image/*"
@@ -113,9 +145,8 @@ export default function VerifyPage() {
                     setError("ID photo must be under 5MB.");
                     return;
                   }
-                  const reader = new FileReader();
-                  reader.onload = () => setIdImage(String(reader.result));
-                  reader.readAsDataURL(file);
+                  setIdFile(file);
+                  setIdImageName(file.name);
                 }}
               />
             </div>
