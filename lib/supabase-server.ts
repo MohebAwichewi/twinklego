@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createClient as createRawClient } from "@supabase/supabase-js";
-import { getSupabasePublicKey, getSupabaseUrl } from "./supabase-config";
+import { getSupabasePublicKey, getSupabaseServiceRoleKey, getSupabaseUrl } from "./supabase-config";
 
 const url = getSupabaseUrl();
 const key = getSupabasePublicKey();
@@ -41,10 +41,15 @@ export async function createServerSupabase() {
  * Admin client - service role, bypasses RLS (use only in trusted server contexts)
  */
 export function createAdminClient() {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = getSupabaseServiceRoleKey();
   if (!serviceKey) {
     console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing! Admin actions will fail.");
   }
-  return createRawClient(url, serviceKey || "placeholder-service-key");
+  return createRawClient(url, serviceKey || key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 

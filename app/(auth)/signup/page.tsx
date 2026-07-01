@@ -26,17 +26,32 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signUp({
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        full_name: fullName,
+        email,
+        password,
+        role,
+      }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setLoading(false);
+      setError(result.error || "Could not create account.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        data: { full_name: fullName, role },
-      },
     });
 
     setLoading(false);
     if (error) { setError(error.message); return; }
-    window.location.href = "/verify";
+    window.location.href = "/dashboard";
   }
 
   return (
