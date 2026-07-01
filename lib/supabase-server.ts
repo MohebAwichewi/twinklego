@@ -1,22 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createClient as createRawClient } from "@supabase/supabase-js";
+import { getSupabasePublicKey, getSupabaseUrl } from "./supabase-config";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const url = getSupabaseUrl();
+const key = getSupabasePublicKey();
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
+if (!url || !key) {
   console.error(
     "CRITICAL: Supabase variables are missing! Check your .env file. " +
-    `NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL ? "Set" : "Missing"}, ` +
-    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_KEY ? "Set" : "Missing"}`
+    `NEXT_PUBLIC_SUPABASE_URL: ${url ? "Set" : "Missing"}, ` +
+    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY: ${key ? "Set" : "Missing"}`
   );
 }
-
-const url = SUPABASE_URL || "https://placeholder.supabase.co";
-const key = SUPABASE_KEY || "placeholder-key";
 
 /**
  * Server client - call from Server Components, Route Handlers, Server Actions
