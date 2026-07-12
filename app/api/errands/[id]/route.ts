@@ -12,7 +12,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("errands")
-    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*)")
+    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
     .eq("id", id)
     .single();
 
@@ -78,9 +78,18 @@ export async function PATCH(
 
     const { data } = await supabase
       .from("errands")
-      .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*)")
+      .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
       .eq("id", id)
       .single();
+
+    await supabase.from("task_tracking").upsert({
+      errand_id: Number(id),
+      phase: "delivered",
+      delivered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      eta_minutes: 0,
+      distance_to_next_km: 0,
+    }, { onConflict: "errand_id" });
 
     if (data?.customer_id !== user.id) {
       await supabase.from("notifications").insert({
@@ -111,13 +120,31 @@ export async function PATCH(
     .from("errands")
     .update(updates)
     .eq("id", id)
-    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*)")
+    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Create notification for status changes
   if (data && body.status) {
+    if (body.status === "accepted") {
+      await supabase.from("task_tracking").upsert({
+        errand_id: data.id,
+        phase: "accepted",
+        accepted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "errand_id" });
+    }
+
+    if (body.status === "in_progress") {
+      await supabase.from("task_tracking").upsert({
+        errand_id: data.id,
+        phase: "heading_to_pickup",
+        heading_to_pickup_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "errand_id" });
+    }
+
     const notifyUserId = body.status === "accepted" || body.status === "in_progress"
       ? data.customer_id
       : body.status === "completed"

@@ -26,6 +26,16 @@ export function estimatePrice(distanceKm: number): number {
 }
 
 /**
+ * Estimate ETA in minutes from distance. Uses a conservative city speed so the UI
+ * gives reassurance without pretending to know exact traffic conditions.
+ */
+export function estimateEtaMinutes(distanceKm: number, speedKmh = 22): number {
+  if (!Number.isFinite(distanceKm) || distanceKm <= 0) return 1;
+  const trafficBuffer = 1.2;
+  return Math.max(1, Math.ceil((distanceKm / speedKmh) * 60 * trafficBuffer));
+}
+
+/**
  * Format NGN currency
  */
 export function formatNGN(amount: number): string {

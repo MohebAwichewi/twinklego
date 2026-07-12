@@ -5,6 +5,12 @@ export type VerificationStatus = "pending" | "approved" | "rejected";
 export type TransactionType = "deposit" | "withdrawal" | "payment" | "earning" | "refund";
 export type DisputeStatus = "open" | "investigating" | "resolved";
 export type DisputeCategory = "service_issue" | "no_show" | "safety_concern" | "other";
+export type TaskTrackingPhase =
+  | "accepted"
+  | "heading_to_pickup"
+  | "picked_up"
+  | "en_route_delivery"
+  | "delivered";
 
 export interface Profile {
   id: string;
@@ -62,6 +68,24 @@ export interface Errand {
   // joined fields
   customer?: Profile;
   assigned_runner?: Profile;
+  tracking?: TaskTracking;
+}
+
+export interface TaskTracking {
+  id: number;
+  errand_id: number;
+  phase: TaskTrackingPhase;
+  runner_lat: number | null;
+  runner_lng: number | null;
+  distance_to_next_km: number | null;
+  eta_minutes: number | null;
+  accepted_at: string | null;
+  heading_to_pickup_at: string | null;
+  picked_up_at: string | null;
+  en_route_delivery_at: string | null;
+  delivered_at: string | null;
+  last_location_at: string | null;
+  updated_at: string;
 }
 
 export interface Wallet {
