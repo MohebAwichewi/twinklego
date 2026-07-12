@@ -20,7 +20,9 @@ import {
   Star,
   UserRoundCheck,
 } from "lucide-react";
+import Image from "next/image";
 import { WaitlistForm } from "./waitlist-form";
+import Reveal from "@/components/reveal";
 
 const tasks = [
   { icon: ShoppingBag, label: "Pick up groceries", color: "coral" },
@@ -79,13 +81,13 @@ export default function Home() {
         <div className="hero-glow hero-glow-one" />
         <div className="hero-glow hero-glow-two" />
         <div className="container hero-grid">
-          <div className="hero-copy">
+          <div className="hero-copy hero-enter">
             <div className="eyebrow"><span><Sparkles size={14} /></span> Help is closer than you think</div>
             <h1>Need something <em>done?</em></h1>
             <p className="hero-lead">Get trusted help nearby.</p>
             <p className="hero-body">Busy people need help. Other people need income. TwinkleGo connects them safely.</p>
             <div className="hero-actions">
-              <a className="button" href="#waitlist">Get early access <ArrowRight size={18} /></a>
+              <a className="button" href="/signup">Get help now <ArrowRight size={18} /></a>
               <a className="text-link" href="#how-it-works">See how it works <ChevronRight size={17} /></a>
             </div>
             <div className="trust-row">
@@ -94,13 +96,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="hero-scene" aria-label="TwinkleGo task matching preview">
-            <div className="map-lines" />
-            <div className="location location-one"><MapPin size={18} /></div>
-            <div className="location location-two"><MapPin size={16} /></div>
+          <div className="hero-scene hero-enter hero-enter-delay" aria-label="TwinkleGo task matching preview">
+            <Image className="hero-map-image" src="/images/live-route-map.webp" alt="A live TwinkleGo route between a runner and customer" fill sizes="(max-width: 900px) 100vw, 50vw" priority />
             <div className="runner-card">
-              <div className="runner-avatar">KA<span><Check size={11} /></span></div>
-              <div><strong>Kemi is nearby</strong><small>Verified runner · 4.9 <Star size={11} fill="currentColor" /></small></div>
+              <Image className="runner-avatar-image" src="/images/verified-runner-kunle.webp" alt="Kunle, verified runner" width={48} height={48} />
+              <div><strong>Kunle is nearby</strong><small>Verified runner · 4.9 <Star size={11} fill="currentColor" /></small></div>
               <span className="live-dot">Available</span>
             </div>
             <div className="task-card">
@@ -108,10 +108,6 @@ export default function Home() {
               <div><small>Your request</small><strong>Pick up groceries</strong><p><MapPin size={12} /> 8 min away</p></div>
               <span className="task-status"><Check size={14} /> Matched</span>
             </div>
-            <div className="route-dot route-a" />
-            <div className="route-dot route-b" />
-            <div className="route-dot route-c" />
-            <div className="sparkle-float"><Sparkles size={24} /></div>
           </div>
         </div>
       </section>
@@ -124,7 +120,7 @@ export default function Home() {
 
       <section className="earn-section" id="earn">
         <div className="container earn-grid">
-          <div className="earn-visual">
+          <Reveal className="earn-visual">
             <div className="phone">
               <div className="phone-top"><Logo /></div>
               <div className="phone-greeting"><span>Good morning, Tolu</span><strong>Ready to earn nearby?</strong></div>
@@ -133,8 +129,8 @@ export default function Home() {
               <div className="mini-task"><span className="teal"><PackageCheck size={19} /></span><div><strong>Deliver a parcel</strong><small>On your way · 20 min</small></div><b>₦2,200</b></div>
             </div>
             <div className="earn-bubble"><Banknote size={20} /><span><small>Earned today</small><strong>₦8,400</strong></span></div>
-          </div>
-          <div className="section-copy">
+          </Reveal>
+          <Reveal className="section-copy" delay={100}>
             <div className="eyebrow"><span><Banknote size={14} /></span> Your time, your choice</div>
             <h2>Need extra income?</h2>
             <p className="section-lead">Become available and earn while going about your day.</p>
@@ -144,8 +140,8 @@ export default function Home() {
               <li><Check size={17} /> Choose tasks nearby</li>
               <li><Check size={17} /> Get paid securely</li>
             </ul>
-            <a className="button button-dark" href="#waitlist">Become a runner <ArrowRight size={18} /></a>
-          </div>
+            <a className="button button-dark" href="/signup">Become a runner <ArrowRight size={18} /></a>
+          </Reveal>
         </div>
       </section>
 
@@ -157,10 +153,10 @@ export default function Home() {
           </div>
           <div className="steps-grid">
             {steps.map(({ number, title, text, icon: Icon }) => (
-              <article className="step-card" key={number}>
+              <Reveal className="step-card" delay={Number(number) * 60} key={number}>
                 <div className="step-top"><span>{number}</span><i><Icon size={22} /></i></div>
                 <h3>{title}</h3><p>{text}</p>
-              </article>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -168,16 +164,16 @@ export default function Home() {
 
       <section className="safety section" id="safety">
         <div className="container safety-grid">
-          <div className="section-copy safety-copy">
+          <Reveal className="section-copy safety-copy">
             <div className="eyebrow eyebrow-light"><span><ShieldCheck size={14} /></span> Trust comes first</div>
             <h2>Help should feel helpful. Not risky.</h2>
             <p className="section-lead">TwinkleGo is designed around trust and safety at every step.</p>
             <p>From the moment someone joins to the moment a task is completed, we create clear records, real accountability, and ways to get support.</p>
             <div className="safety-note"><ShieldCheck size={24} /><span><strong>Your safety is never an afterthought.</strong><small>Verification, tracking, and support are built in.</small></span></div>
-          </div>
+          </Reveal>
           <div className="safety-cards">
-            {safety.map(({ title, text, icon: Icon }) => (
-              <article key={title}><span><Icon size={21} /></span><h3>{title}</h3><p>{text}</p></article>
+            {safety.map(({ title, text, icon: Icon }, index) => (
+              <Reveal delay={index * 55} key={title}><article><span><Icon size={21} /></span><h3>{title}</h3><p>{text}</p></article></Reveal>
             ))}
           </div>
         </div>

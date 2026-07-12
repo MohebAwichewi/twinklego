@@ -1,115 +1,137 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Errand, Profile, Wallet } from "@/lib/types";
-import { formatNGN } from "@/lib/geo";
-import {
-  ListChecks, CheckCircle, Clock, Wallet as WalletIcon,
-  PlusCircle, Users, ArrowRight, Loader2, Star,
-} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { Errand, Profile } from "@/lib/types";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Bike,
+  Box,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  FileText,
+  Loader2,
+  MapPin,
+  PackageCheck,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Stethoscope,
+} from "lucide-react";
+
+const popularRequests = [
+  { label: "Pick up & deliver", detail: "Food, groceries, packages", icon: PackageCheck, tone: "teal" },
+  { label: "Drop something off", detail: "Items, returns, gifts", icon: Box, tone: "blue" },
+  { label: "Store run", detail: "Groceries and essentials", icon: ShoppingBag, tone: "blue" },
+  { label: "Pharmacy run", detail: "Medicines and prescriptions", icon: Stethoscope, tone: "teal" },
+  { label: "Send documents", detail: "Documents, keys, papers", icon: FileText, tone: "gold" },
+  { label: "Other errands", detail: "Anything else nearby", icon: Sparkles, tone: "violet" },
+];
 
 export default function DashboardHome() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [errands, setErrands] = useState<Errand[]>([]);
-  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/profile").then(r => r.json()),
-      fetch("/api/errands").then(r => r.json()),
-      fetch("/api/wallet").then(r => r.json()),
-    ]).then(([p, e, w]) => {
-      setProfile(p);
-      setErrands(Array.isArray(e) ? e : []);
-      setWallet(w);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+      fetch("/api/profile").then(response => response.json()),
+      fetch("/api/errands").then(response => response.json()),
+    ])
+      .then(([profileData, errandData]) => {
+        setProfile(profileData);
+        setErrands(Array.isArray(errandData) ? errandData : []);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="dash-loading"><Loader2 size={28} className="spin" /></div>;
+  if (loading) return <div className="dash-loading"><Loader2 size={28} className="spin" /><p>Bringing nearby help into view...</p></div>;
 
-  const active = errands.filter(e => ["posted", "accepted", "in_progress"].includes(e.status));
-  const completed = errands.filter(e => e.status === "completed");
-
-  const stats = [
-    { label: "Active Errands", value: active.length, icon: ListChecks, color: "blue" },
-    { label: "Completed", value: completed.length, icon: CheckCircle, color: "teal" },
-    { label: "Pending", value: errands.filter(e => e.status === "posted").length, icon: Clock, color: "gold" },
-    { label: "Wallet Balance", value: wallet ? formatNGN(wallet.balance) : "₦0", icon: WalletIcon, color: "coral" },
-  ];
+  const activeErrand = errands.find(errand => ["accepted", "in_progress"].includes(errand.status));
+  const firstName = profile?.full_name?.split(" ")[0] || "there";
+  const requestHref = query.trim() ? `/errands/new?title=${encodeURIComponent(query.trim())}` : "/errands/new";
 
   return (
-    <div className="dash-page">
-      <div className="dash-page-head">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Here&apos;s what&apos;s happening with your TwinkleGo account</p>
+    <div className="concierge-home">
+      <section className="concierge-compose">
+        <div className="concierge-intro">
+          <span className="concierge-greeting">Good {greetingPeriod()}, {firstName}</span>
+          <h1>What can we take off<br />your plate today?</h1>
+          <p>Trusted help from verified runners in your neighborhood.</p>
         </div>
-        <Link href="/errands/new" className="button"><PlusCircle size={16} /> Post an Errand</Link>
-      </div>
 
-      <div className="stats-grid">
-        {stats.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="stat-card">
-            <span className={`stat-icon ${color}`}><Icon size={20} /></span>
-            <div>
-              <small>{label}</small>
-              <strong>{value}</strong>
-            </div>
+        <div className="request-composer">
+          <div className="composer-location"><MapPin size={18} /><span>{profile?.address || "Set your pickup location"}</span><Link href="/profile">Change</Link></div>
+          <label className="composer-search">
+            <Search size={20} />
+            <input value={query} onChange={event => setQuery(event.target.value)} placeholder="What do you need help with?" />
+          </label>
+          <div className="composer-label">Popular requests</div>
+          <div className="request-options">
+            {popularRequests.map(({ label, detail, icon: Icon, tone }) => (
+              <button key={label} type="button" onClick={() => setQuery(label)} className={query === label ? "selected" : ""}>
+                <span className={`request-option-icon ${tone}`}><Icon size={18} /></span>
+                <span><strong>{label}</strong><small>{detail}</small></span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+          <Link href={requestHref} className="button composer-primary">Start a request <ArrowRight size={18} /></Link>
+        </div>
+        <p className="composer-trust"><ShieldCheck size={19} /> Every runner is identity checked before accepting tasks.</p>
+      </section>
 
-      <div className="dash-grid">
-        <div className="dash-section">
-          <div className="dash-section-head">
-            <h2>Active Errands</h2>
-            <Link href="/errands" className="text-link">View all <ArrowRight size={14} /></Link>
-          </div>
-          {active.length === 0 ? (
-            <div className="empty-state">
-              <ListChecks size={32} />
-              <p>No active errands right now</p>
-              <Link href="/errands/new" className="button button-small">Post one now</Link>
-            </div>
+      <aside className="concierge-aside">
+        <section className="active-request-panel">
+          <div className="panel-heading"><h2>Active request</h2><Link href="/errands">View all</Link></div>
+          {activeErrand ? (
+            <Link href={`/errands/${activeErrand.id}`} className="active-request-body">
+              <span className="active-status"><Bike size={14} /> Runner is on the way</span>
+              <div className="active-route-layout">
+                <div className="active-steps">
+                  <div className="active-step done"><span><CheckCircle2 size={15} /></span><div><strong>Task accepted</strong><small>Your runner is confirmed</small></div></div>
+                  <div className="active-step current"><span><Bike size={15} /></span><div><strong>Heading to pickup</strong><small>About 8 minutes away</small></div></div>
+                  <div className="active-step"><span><PackageCheck size={15} /></span><div><strong>On the way to you</strong><small>ETA updates live</small></div></div>
+                </div>
+                <Image src="/images/live-route-map.webp" alt="Live route between runner and customer" width={260} height={210} className="active-map" />
+              </div>
+              <span className="active-request-link">See request details <ArrowRight size={15} /></span>
+            </Link>
           ) : (
-            <div className="errand-list">
-              {active.slice(0, 5).map(e => (
-                <Link key={e.id} href={`/errands/${e.id}`} className="errand-row">
-                  <span className={`errand-status-dot ${e.status}`} />
-                  <div>
-                    <strong>{e.title}</strong>
-                    <small>{e.category.replace("_", " ")} · {formatNGN(e.price)}</small>
-                  </div>
-                  <span className="errand-time">{new Date(e.created_at).toLocaleDateString()}</span>
-                </Link>
-              ))}
+            <div className="active-empty">
+              <span><Clock3 size={21} /></span><div><strong>No active request</strong><p>Your live task progress will appear here.</p></div>
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="dash-section">
-          <div className="dash-section-head">
-            <h2>Quick Actions</h2>
-          </div>
-          <div className="quick-actions">
-            <Link href="/errands/new" className="quick-action"><PlusCircle size={20} /><span>Post Errand</span></Link>
-            <Link href="/runners" className="quick-action"><Users size={20} /><span>Find Runners</span></Link>
-            <Link href="/wallet" className="quick-action"><WalletIcon size={20} /><span>Wallet</span></Link>
-            <Link href="/profile" className="quick-action"><Star size={20} /><span>Profile</span></Link>
-          </div>
-
-          {!profile?.is_verified && (
-            <div className="verify-cta">
-              <strong>Get verified to unlock all features</strong>
-              <p>Verified users can post errands and accept tasks.</p>
-              <Link href="/profile/verify" className="button button-small">Verify identity <ArrowRight size={14} /></Link>
+        <section className="trusted-runner-panel">
+          <div className="panel-heading"><h2>Trusted help nearby</h2><Link href="/runners">See all</Link></div>
+          <div className="runner-profile-card">
+            <Image src="/images/verified-runner-kunle.webp" alt="Kunle, a verified runner" width={126} height={126} />
+            <div className="runner-profile-copy">
+              <span className="verified-pill"><BadgeCheck size={14} /> Verified runner</span>
+              <h3>Kunle A.</h3>
+              <p><Star size={14} fill="currentColor" /> <strong>4.9</strong> · 312 tasks completed</p>
+              <p><MapPin size={14} /> 8 minutes away</p>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+          <div className="runner-proof"><ShieldCheck size={19} /><span><strong>Background checked. Identity verified.</strong><small>Here to help when you need it.</small></span></div>
+          <Link href="/runners" className="nearby-link">See more nearby runners <ArrowRight size={15} /></Link>
+        </section>
+      </aside>
     </div>
   );
+}
+
+function greetingPeriod() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  return "evening";
 }

@@ -1,6 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import Sidebar from "@/components/sidebar";
 import Topbar from "@/components/topbar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +15,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="dash-shell">
-      <Sidebar />
       <div className="dash-main">
         <Topbar profile={profile} />
         <div className="dash-content">

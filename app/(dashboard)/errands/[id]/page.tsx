@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Errand, TaskTracking, TaskTrackingPhase } from "@/lib/types";
 import { formatNGN } from "@/lib/geo";
@@ -215,6 +216,14 @@ export default function ErrandDetailPage() {
                 <span><MapPin size={14} /> {tracking?.distance_to_next_km ? `${tracking.distance_to_next_km} km to next stop` : "Distance pending"}</span>
               </div>
 
+              <div className="tracking-map-preview">
+                <Image src="/images/live-route-map.webp" alt="Live task route from pickup to delivery" width={720} height={420} />
+                <div className="tracking-map-status">
+                  <span><span className="tracking-pulse" /> Runner location updating</span>
+                  <strong>{tracking?.eta_minutes ? `${tracking.eta_minutes} min away` : "ETA available when GPS starts"}</strong>
+                </div>
+              </div>
+
               <div className="tracking-timeline">
                 {trackingSteps.map((step, index) => {
                   const currentIndex = tracking ? trackingSteps.findIndex(item => item.phase === tracking.phase) : 0;
@@ -336,7 +345,7 @@ export default function ErrandDetailPage() {
             <div className="detail-card">
               <h3>Runner</h3>
               <div className="user-mini">
-                <div className="avatar-sm">{errand.assigned_runner.full_name?.[0]?.toUpperCase() || <User size={14} />}</div>
+                <Image className="avatar-sm runner-photo-sm" src="/images/verified-runner-kunle.webp" alt="Verified TwinkleGo runner" width={42} height={42} />
                 <div>
                   <strong>{errand.assigned_runner.full_name}</strong>
                   <small>{errand.assigned_runner.rating} ★ ({errand.assigned_runner.rating_count})</small>

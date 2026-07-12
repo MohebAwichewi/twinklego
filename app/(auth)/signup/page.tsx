@@ -48,7 +48,11 @@ export default function SignupPage() {
 
     if (result.requiresEmailConfirmation) {
       setLoading(false);
-      setSuccess("Account created. Check your email to confirm it, then log in.");
+      setSuccess(
+        result.confirmationAlreadySent
+          ? "Your account already exists but is not confirmed. Open the first confirmation email from Supabase, then log in. No new email was requested."
+          : "Account created. Check your email to confirm it, then log in.",
+      );
       return;
     }
 

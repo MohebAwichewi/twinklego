@@ -85,6 +85,26 @@ export async function POST(request: Request) {
   const publicClient = createClient(getSupabaseUrl(), getSupabasePublicKey(), {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+
+  const { data: existingSession, error: existingSessionError } =
+    await publicClient.auth.signInWithPassword({ email: normalizedEmail, password });
+
+  if (existingSession.session) {
+    return NextResponse.json({
+      success: true,
+      requiresEmailConfirmation: false,
+      accountAlreadyExists: true,
+    });
+  }
+
+  if (existingSessionError?.message.toLowerCase().includes("email not confirmed")) {
+    return NextResponse.json({
+      success: true,
+      requiresEmailConfirmation: true,
+      confirmationAlreadySent: true,
+    });
+  }
+
   const { data, error } = await publicClient.auth.signUp({
     email: normalizedEmail,
     password,
