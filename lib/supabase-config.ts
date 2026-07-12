@@ -29,6 +29,20 @@ export function getSupabaseServiceRoleKey() {
   return cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
+export function isPrivilegedSupabaseKey(key: string) {
+  if (key.startsWith("sb_secret_")) return true;
+  if (!key.startsWith("eyJ")) return false;
+
+  try {
+    const payload = key.split(".")[1];
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(atob(normalized)) as { role?: string };
+    return decoded.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 export function getSupabaseConfigSummary() {
   const key = getSupabasePublicKey();
   const serviceKey = getSupabaseServiceRoleKey();
@@ -38,5 +52,6 @@ export function getSupabaseConfigSummary() {
     keyPrefix: key.slice(0, 18),
     hasUsableKey: Boolean(key),
     hasServiceRoleKey: Boolean(serviceKey),
+    hasValidServiceRoleKey: isPrivilegedSupabaseKey(serviceKey),
   };
 }

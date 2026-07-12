@@ -1,75 +1,108 @@
 import { createAdminClient } from "@/lib/supabase-server";
-import { getSupabaseServiceRoleKey } from "@/lib/supabase-config";
+import {
+  getSupabasePublicKey,
+  getSupabaseServiceRoleKey,
+  getSupabaseUrl,
+  isPrivilegedSupabaseKey,
+} from "@/lib/supabase-config";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import type { UserRole } from "@/lib/types";
 
 const roles: UserRole[] = ["customer", "runner", "both"];
 
 export async function POST(request: Request) {
-  const serviceKey = getSupabaseServiceRoleKey();
-
-  if (!serviceKey) {
-    return NextResponse.json(
-      {
-        error:
-          "Server signup is not configured. Add SUPABASE_SERVICE_ROLE_KEY in Vercel to create accounts without email-rate-limit errors.",
-      },
-      { status: 503 },
-    );
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid signup request." }, { status: 400 });
   }
 
-  const { full_name, email, password, role } = await request.json();
-  const selectedRole: UserRole = roles.includes(role) ? role : "customer";
+  const { full_name, email, password, role } = body;
+  const selectedRole: UserRole =
+    typeof role === "string" && roles.includes(role as UserRole)
+      ? (role as UserRole)
+      : "customer";
 
-  if (!full_name || String(full_name).trim().length < 2) {
+  if (typeof full_name !== "string" || full_name.trim().length < 2) {
     return NextResponse.json({ error: "Enter your full name." }, { status: 400 });
   }
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
-  if (!password || String(password).length < 6) {
+  if (typeof password !== "string" || password.length < 6) {
     return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const fullName = String(full_name).trim();
+  const normalizedEmail = email.trim().toLowerCase();
+  const fullName = full_name.trim();
+  const serviceKey = getSupabaseServiceRoleKey();
 
-  const { data, error } = await supabase.auth.admin.createUser({
-    email: normalizedEmail,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      full_name: fullName,
-      role: selectedRole,
-    },
-  });
+  if (isPrivilegedSupabaseKey(serviceKey)) {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        role: selectedRole,
+      },
+    });
 
-  if (error) {
+    if (!error) {
+      const user = data.user;
+
+      if (user) {
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          full_name: fullName,
+          role: selectedRole,
+          updated_at: new Date().toISOString(),
+        });
+
+        await supabase.from("wallets").upsert({ user_id: user.id }, { onConflict: "user_id" });
+      }
+
+      return NextResponse.json({ success: true, requiresEmailConfirmation: false });
+    }
+
     const alreadyExists =
       error.message.toLowerCase().includes("already") ||
       error.message.toLowerCase().includes("registered");
 
-    return NextResponse.json(
-      { error: alreadyExists ? "An account already exists for this email. Please log in." : error.message },
-      { status: alreadyExists ? 409 : 400 },
-    );
+    if (alreadyExists) {
+      return NextResponse.json(
+        { error: "An account already exists for this email. Please log in." },
+        { status: 409 },
+      );
+    }
   }
 
-  const user = data.user;
+  const publicClient = createClient(getSupabaseUrl(), getSupabasePublicKey(), {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data, error } = await publicClient.auth.signUp({
+    email: normalizedEmail,
+    password,
+    options: {
+      data: { full_name: fullName, role: selectedRole },
+      emailRedirectTo: `${new URL(request.url).origin}/api/auth/callback?next=/dashboard`,
+    },
+  });
 
-  if (user) {
-    await supabase.from("profiles").upsert({
-      id: user.id,
-      full_name: fullName,
-      role: selectedRole,
-      updated_at: new Date().toISOString(),
-    });
-
-    await supabase.from("wallets").upsert({ user_id: user.id }, { onConflict: "user_id" });
+  if (error) {
+    const message = error.message.toLowerCase().includes("rate limit")
+      ? "Too many confirmation emails were requested. Wait a few minutes, then try again."
+      : error.message;
+    return NextResponse.json({ error: message }, { status: error.status || 400 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    requiresEmailConfirmation: !data.session,
+  });
 }

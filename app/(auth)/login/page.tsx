@@ -19,7 +19,14 @@ export default function LoginPage() {
     setError("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { setError(error.message); return; }
+    if (error) {
+      setError(
+        error.message.toLowerCase().includes("email not confirmed")
+          ? "Confirm your email using the link Supabase sent you, then log in."
+          : error.message,
+      );
+      return;
+    }
     window.location.href = "/dashboard";
   }
 
