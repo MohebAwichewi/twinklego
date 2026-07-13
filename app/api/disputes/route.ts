@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { privilegedAdminClient } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -20,6 +21,8 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const dataClient = privilegedAdminClient() ?? supabase;
+
   const { errand_id, category, reason } = await request.json();
   if (!errand_id || !reason) {
     return NextResponse.json({ error: "errand_id and reason are required" }, { status: 400 });
@@ -34,7 +37,8 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Update errand status to disputed
-  await supabase.from("errands").update({ status: "disputed" }).eq("id", errand_id);
+  const { error: statusError } = await dataClient.from("errands").update({ status: "disputed" }).eq("id", errand_id);
+  if (statusError) return NextResponse.json({ error: statusError.message }, { status: 500 });
 
   return NextResponse.json(data);
 }

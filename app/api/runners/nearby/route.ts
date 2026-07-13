@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { privilegedAdminClient } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -7,12 +8,18 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(request.url);
-  const lat = parseFloat(url.searchParams.get("lat") || "0");
-  const lng = parseFloat(url.searchParams.get("lng") || "0");
-  const radius = parseFloat(url.searchParams.get("radius") || "10"); // km
+  const lat = Number(url.searchParams.get("lat"));
+  const lng = Number(url.searchParams.get("lng"));
+  const requestedRadius = Number(url.searchParams.get("radius") || "10");
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    return NextResponse.json({ error: "Valid coordinates are required." }, { status: 400 });
+  }
+  const radius = Number.isFinite(requestedRadius) ? Math.min(Math.max(requestedRadius, 1), 100) : 10;
+
+  const dataClient = privilegedAdminClient() ?? supabase;
 
   // Fetch available runners (verified + available)
-  const { data, error } = await supabase
+  const { data, error } = await dataClient
     .from("profiles")
     .select("id, full_name, avatar_url, rating, rating_count, lat, lng, is_available, is_verified")
     .eq("is_available", true)

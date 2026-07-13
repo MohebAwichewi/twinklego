@@ -190,6 +190,7 @@ alter table public.admin_audit_logs enable row level security;
 
 drop policy if exists "Anyone can join waitlist" on public.waitlist;
 drop policy if exists "Public profiles are viewable by everyone" on public.profiles;
+drop policy if exists "Users can view own profile" on public.profiles;
 drop policy if exists "Users can update own profile" on public.profiles;
 drop policy if exists "Users can insert own profile" on public.profiles;
 drop policy if exists "Admins can update profiles" on public.profiles;
@@ -227,8 +228,8 @@ drop policy if exists "Admins can insert audit logs" on public.admin_audit_logs;
 create policy "Anyone can join waitlist" on public.waitlist
   for insert with check (true);
 
-create policy "Public profiles are viewable by everyone" on public.profiles
-  for select using (true);
+create policy "Users can view own profile" on public.profiles
+  for select using (auth.uid() = id);
 
 create policy "Users can insert own profile" on public.profiles
   for insert with check (auth.uid() = id);
@@ -236,10 +237,6 @@ create policy "Users can insert own profile" on public.profiles
 create policy "Users can update own profile" on public.profiles
   for update using (auth.uid() = id)
   with check (auth.uid() = id);
-
-create policy "Admins can update profiles" on public.profiles
-  for update using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
-  with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
 create policy "Users can view own verifications" on public.verifications
   for select using (auth.uid() = user_id);
@@ -287,8 +284,7 @@ create policy "Verified runners can accept posted errands" on public.errands
   );
 
 create policy "Admins can view all errands" on public.errands
-  for all using (exists (select 1 from public.profiles where id = auth.uid() and is_admin))
-  with check (exists (select 1 from public.profiles where id = auth.uid() and is_admin));
+  for select using (exists (select 1 from public.profiles where id = auth.uid() and is_admin));
 
 create policy "Users can view own wallet" on public.wallets
   for select using (auth.uid() = user_id);
@@ -396,7 +392,18 @@ create policy "Users can update own notifications" on public.notifications
   with check (auth.uid() = user_id);
 
 create policy "Authenticated users can create notifications" on public.notifications
-  for insert with check (auth.uid() is not null);
+  for insert with check (
+    auth.uid() is not null
+    and related_errand_id is not null
+    and exists (
+      select 1 from public.errands e
+      where e.id = related_errand_id
+      and (
+        (e.customer_id = auth.uid() and e.assigned_runner_id = user_id)
+        or (e.assigned_runner_id = auth.uid() and e.customer_id = user_id)
+      )
+    )
+  );
 
 create policy "Admins can view audit logs" on public.admin_audit_logs
   for select using (exists (select 1 from public.profiles where id = auth.uid() and is_admin));
@@ -420,6 +427,10 @@ grant update (
   emergency_contact_phone,
   updated_at
 ) on public.profiles to authenticated;
+
+-- All task-state transitions go through authenticated server routes, which
+-- validate the transition before using the server-only privileged client.
+revoke update on public.errands from authenticated;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -620,6 +631,7 @@ drop policy if exists "Allow users and admins to view verifications" on storage.
 create policy "Allow authenticated uploads to verifications" on storage.objects
   for insert to authenticated with check (
     bucket_id = 'verifications'
+    and (storage.foldername(name))[1] = auth.uid()::text
   );
 
 -- Create policy to allow users to view their own IDs and admins to view all IDs

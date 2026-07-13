@@ -1,17 +1,21 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import { estimatePrice, haversineDistance } from "@/lib/geo";
+import { privilegedAdminClient } from "@/lib/admin-auth";
 
 const categories = new Set(["groceries", "delivery", "home_help", "errand", "temporary_job", "service_request"]);
+const errandSelect = "*, customer:customer_id(id, full_name, avatar_url, rating, rating_count, is_verified), assigned_runner:assigned_runner_id(id, full_name, avatar_url, rating, rating_count, is_verified)";
 
 export async function GET() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const dataClient = privilegedAdminClient() ?? supabase;
+
+  const { data, error } = await dataClient
     .from("errands")
-    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*)")
+    .select(errandSelect)
     .or(`customer_id.eq.${user.id},assigned_runner_id.eq.${user.id},status.eq.posted`)
     .order("created_at", { ascending: false });
 

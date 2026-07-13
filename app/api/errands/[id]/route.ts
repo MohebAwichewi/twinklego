@@ -1,5 +1,8 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { privilegedAdminClient } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
+
+const errandSelect = "*, customer:customer_id(id, full_name, avatar_url, rating, rating_count, is_verified), assigned_runner:assigned_runner_id(id, full_name, avatar_url, rating, rating_count, is_verified), tracking:task_tracking(*)";
 
 export async function GET(
   _req: Request,
@@ -10,9 +13,18 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { error: accessError } = await supabase
     .from("errands")
-    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
+    .select("id")
+    .eq("id", id)
+    .single();
+  if (accessError) return NextResponse.json({ error: "Errand not found" }, { status: 404 });
+
+  const dataClient = privilegedAdminClient() ?? supabase;
+
+  const { data, error } = await dataClient
+    .from("errands")
+    .select(errandSelect)
     .eq("id", id)
     .single();
 
@@ -28,6 +40,8 @@ export async function PATCH(
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const dataClient = privilegedAdminClient() ?? supabase;
 
   const body = await request.json();
   const updates: Record<string, unknown> = {};
@@ -76,13 +90,13 @@ export async function PATCH(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    const { data } = await supabase
+    const { data } = await dataClient
       .from("errands")
-      .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
+      .select(errandSelect)
       .eq("id", id)
       .single();
 
-    await supabase.from("task_tracking").upsert({
+    await dataClient.from("task_tracking").upsert({
       errand_id: Number(id),
       phase: "delivered",
       delivered_at: new Date().toISOString(),
@@ -92,7 +106,7 @@ export async function PATCH(
     }, { onConflict: "errand_id" });
 
     if (data?.customer_id !== user.id) {
-      await supabase.from("notifications").insert({
+      await dataClient.from("notifications").insert({
         user_id: data.customer_id,
         title: "Errand completed",
         body: `"${data.title}" has been completed and payment was released.`,
@@ -116,11 +130,11 @@ export async function PATCH(
     return NextResponse.json({ error: "No supported update was provided." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await dataClient
     .from("errands")
     .update(updates)
     .eq("id", id)
-    .select("*, customer:customer_id(*), assigned_runner:assigned_runner_id(*), tracking:task_tracking(*)")
+    .select(errandSelect)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -128,7 +142,7 @@ export async function PATCH(
   // Create notification for status changes
   if (data && body.status) {
     if (body.status === "accepted") {
-      await supabase.from("task_tracking").upsert({
+      await dataClient.from("task_tracking").upsert({
         errand_id: data.id,
         phase: "accepted",
         accepted_at: new Date().toISOString(),
@@ -137,7 +151,7 @@ export async function PATCH(
     }
 
     if (body.status === "in_progress") {
-      await supabase.from("task_tracking").upsert({
+      await dataClient.from("task_tracking").upsert({
         errand_id: data.id,
         phase: "heading_to_pickup",
         heading_to_pickup_at: new Date().toISOString(),
@@ -152,7 +166,7 @@ export async function PATCH(
         : data.assigned_runner_id;
 
     if (notifyUserId && notifyUserId !== user.id) {
-      await supabase.from("notifications").insert({
+      await dataClient.from("notifications").insert({
         user_id: notifyUserId,
         title: `Errand ${body.status.replace("_", " ")}`,
         body: `"${data.title}" has been ${body.status.replace("_", " ")}.`,
