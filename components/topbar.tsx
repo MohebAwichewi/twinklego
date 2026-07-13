@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Bell, User, Sparkles, House, ClipboardList, Wallet, Users, ShieldCheck, Menu, X, LogOut } from "lucide-react";
+import { Bell, User, Sparkles, House, ClipboardList, Wallet, Users, ShieldCheck, Menu, X, LogOut, Shield } from "lucide-react";
 import { Notification, Profile } from "@/lib/types";
 import Link from "next/link";
 import AvailabilityToggle from "./availability-toggle";
@@ -61,6 +61,7 @@ export default function Topbar({ profile }: { profile: Profile | null }) {
             </Link>
           );
         })}
+        {profile?.is_admin ? <Link href="/admin" className={pathname.startsWith("/admin") ? "active" : ""} onClick={() => setMenuOpen(false)}><Shield size={17} /><span>Admin console</span></Link> : null}
       </nav>
 
       <div className="topbar-right">

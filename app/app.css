@@ -417,6 +417,33 @@
 .search-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: white; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; }
 .search-bar input { flex: 1; border: 0; outline: 0; font-size: 13px; }
 .search-bar svg { color: var(--body); }
+.super-admin-label { margin-left: auto; padding: 4px 7px; border-radius: 999px; color: #f7d98a; background: rgba(247,189,75,.12); font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+.admin-create-form { display: grid; grid-template-columns: 1.2fr repeat(3, 1fr) .8fr auto; gap: 9px; align-items: center; margin-bottom: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: white; }
+.admin-create-form > div { display: flex; align-items: center; gap: 9px; }.admin-create-form > div > span { display: flex; flex-direction: column; gap: 2px; }.admin-create-form strong { font-size: 11px; }.admin-create-form small { color: var(--body); font-size: 8px; }
+.admin-create-form input, .admin-create-form select { min-width: 0; height: 42px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 10px; }
+.admin-checkbox { display: flex; align-items: center; gap: 5px; color: var(--body); font-size: 9px; white-space: nowrap; }
+.admin-message { margin-bottom: 14px; }.admin-account-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }.admin-user-row { align-items: center; }
+.badge-super { color: #7b5a08; background: #fff5cf; }.audit-row time { color: var(--body); font-size: 9px; }.audit-action { min-width: 150px; color: var(--blue-dark); font-size: 10px; font-weight: 800; text-transform: capitalize; }
+.admin-errand-row .admin-row-main small { display: flex; align-items: center; gap: 4px; }.verification-document-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; color: var(--blue); font-size: 10px; font-weight: 700; }
+@media (max-width: 1100px) { .admin-create-form { grid-template-columns: 1fr 1fr; }.admin-create-form > div { grid-column: 1 / -1; } }
+@media (max-width: 700px) { .admin-create-form { grid-template-columns: 1fr; }.admin-account-actions { width: 100%; justify-content: flex-start; } }
+
+.address-field { position: relative; display: flex; flex-direction: column; gap: 7px; }
+.address-field > label { display: flex; align-items: center; gap: 5px; color: #42556b; font-size: 11px; font-weight: 700; }
+.address-input-wrap { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 13px; border: 1px solid var(--line); border-radius: 12px; background: white; transition: border-color .2s, box-shadow .2s; }
+.address-input-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(39,137,216,.08); }
+.address-input-wrap > svg { flex: 0 0 auto; color: #82919e; }
+.address-input-wrap input { min-width: 0; flex: 1; padding: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; }
+.address-confirmed { border-color: #80d0c8; background: #fbfffe; }
+.address-selected-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 4px rgba(49,183,181,.13); }
+.address-results { position: absolute; z-index: 30; top: 76px; right: 0; left: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: white; box-shadow: 0 18px 45px rgba(18,36,59,.15); }
+.address-results button { display: flex; align-items: flex-start; gap: 9px; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #edf2f4; background: white; color: var(--ink); text-align: left; cursor: pointer; }
+.address-results button:hover, .address-results button:focus { background: var(--sky); }
+.address-results button svg { flex: 0 0 auto; margin-top: 2px; color: var(--blue); }.address-results button span { font-size: 11px; line-height: 1.5; }
+.address-results > small { display: block; padding: 8px 14px; color: #8795a1; font-size: 8px; }
+.address-error { color: #c04f3a; font-size: 10px; line-height: 1.5; }
+.address-map { position: relative; overflow: hidden; height: 220px; margin-top: 5px; border: 1px solid var(--line); border-radius: 14px; background: var(--app-soft); }
+.address-map iframe { width: 100%; height: 100%; border: 0; }.address-map a { position: absolute; right: 10px; bottom: 10px; padding: 7px 10px; border-radius: 9px; background: rgba(255,255,255,.94); box-shadow: 0 6px 18px rgba(18,36,59,.12); color: var(--blue-dark); font-size: 9px; font-weight: 750; }
 
 /* ============================================
    TwinkleGo – Landing Nav Updates
@@ -528,7 +555,8 @@
 .active-request-body:hover { transform: translateY(-2px); box-shadow: var(--app-shadow); }
 .active-status { display: inline-flex; align-items: center; gap: 6px; margin: 17px 17px 0; padding: 6px 10px; border-radius: 999px; color: var(--blue-dark); background: var(--app-blue-soft); font-size: 9px; font-weight: 750; }
 .active-route-layout { display: grid; grid-template-columns: 1fr 42%; gap: 14px; align-items: stretch; padding: 15px 17px 17px; }
-.active-map { width: 100%; height: 190px; border-radius: 15px; object-fit: cover; }
+.active-map { width: 100%; height: 190px; border: 0; border-radius: 15px; background: var(--app-soft); }
+.active-map-empty { display: grid; place-items: center; align-content: center; gap: 8px; min-height: 190px; border-radius: 15px; color: #7f909e; background: var(--app-soft); font-size: 9px; text-align: center; }
 .active-steps { padding-top: 4px; }
 .active-step { position: relative; display: flex; gap: 10px; min-height: 60px; color: #82919e; }
 .active-step:not(:last-child):after { content: ""; position: absolute; left: 13px; top: 30px; bottom: 1px; width: 1px; background: #dce6eb; }
@@ -539,13 +567,15 @@
 .active-empty { display: flex; align-items: center; gap: 12px; min-height: 118px; padding: 22px; border: 1px dashed #cfdde4; border-radius: 18px; background: var(--app-soft); }
 .active-empty > span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; color: var(--blue); background: white; }.active-empty strong { font-size: 12px; }.active-empty p { margin: 4px 0 0; color: var(--body); font-size: 10px; }
 .runner-profile-card { display: flex; align-items: center; gap: 18px; padding: 20px; border-color: #cfe7e5; background: linear-gradient(135deg, #f5fbfb, #edf8f7); }
-.runner-profile-card > img { width: 112px; height: 112px; flex: 0 0 auto; border: 4px solid white; border-radius: 50%; object-fit: cover; box-shadow: 0 10px 28px rgba(24, 103, 107, .15); }
+.runner-real-avatar { display: grid; place-items: center; width: 112px; height: 112px; flex: 0 0 auto; overflow: hidden; border: 4px solid white; border-radius: 50%; object-fit: cover; box-shadow: 0 10px 28px rgba(24, 103, 107, .15); }
+.runner-initials { color: #167f82; background: #dff4f1; font-size: 28px; font-weight: 800; }
 .runner-profile-copy h3 { margin: 8px 0 7px; font-size: 19px; letter-spacing: -.5px; }.runner-profile-copy p { display: flex; align-items: center; gap: 5px; margin: 5px 0; color: #617386; font-size: 10px; }.runner-profile-copy p svg { color: var(--gold); }
 .verified-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; color: #16877e; background: #d7f2ee; font-size: 8px; font-weight: 800; }
 .runner-proof { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 13px 15px; border-radius: 14px; color: #267c78; background: #e8f7f4; }.runner-proof span { display: flex; flex-direction: column; gap: 2px; }.runner-proof strong { font-size: 9px; }.runner-proof small { color: #5f8684; font-size: 8px; }
 .nearby-link { display: inline-flex; align-items: center; gap: 6px; margin: 13px 0 0 4px; color: var(--blue-dark); font-size: 10px; font-weight: 750; }
 .tracking-map-preview { position: relative; overflow: hidden; margin: 16px 0 20px; border: 1px solid var(--app-border); border-radius: 18px; background: var(--app-soft); }
-.tracking-map-preview > img { display: block; width: 100%; height: 260px; object-fit: cover; }
+.tracking-map-preview > iframe { display: block; width: 100%; height: 260px; border: 0; }
+.tracking-map-empty { display: grid; place-items: center; align-content: center; gap: 8px; height: 260px; color: #738593; font-size: 10px; }
 .tracking-map-status { position: absolute; right: 14px; bottom: 14px; left: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.8); border-radius: 13px; background: rgba(255,255,255,.92); box-shadow: 0 10px 28px rgba(25,67,91,.12); backdrop-filter: blur(12px); }
 .tracking-map-status > span { display: flex; align-items: center; gap: 7px; color: #607284; font-size: 9px; }.tracking-map-status strong { color: var(--ink); font-size: 10px; }
 .tracking-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 5px rgba(49,183,181,.15); animation: trackingPulse 1.8s ease-in-out infinite; }
@@ -567,13 +597,13 @@
 /* Auth becomes a trust-first welcome, not a software modal */
 .auth-shell { grid-template-columns: .9fr 1.1fr; background: white; }
 .auth-left { padding: 42px clamp(34px, 5vw, 72px); background: #102d43; }
-.auth-left:after { content: ""; position: absolute; inset: auto -10% -12% 12%; height: 46%; opacity: .14; background: url('/images/live-route-map.webp') center/cover; border-radius: 30px; transform: rotate(-4deg); }
+.auth-left:after { content: ""; position: absolute; inset: auto -10% -12% 12%; height: 46%; opacity: .18; background: radial-gradient(circle at 30% 30%, rgba(49,183,181,.42), transparent 45%), radial-gradient(circle at 70% 65%, rgba(39,137,216,.35), transparent 38%); }
 .auth-left .logo, .auth-hero-text, .auth-promise { position: relative; z-index: 1; }
 .auth-hero-text { margin-block: auto; }.auth-kicker { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 20px; color: #87ddd6; font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: 1.1px; }
 .auth-hero-text h2 { max-width: 560px; font-size: clamp(40px, 4.2vw, 60px); line-height: 1.04; letter-spacing: -3.5px; }
 .auth-hero-text p { max-width: 470px; color: #b2c3cf; font-size: 14px; }
 .auth-trust-preview { display: flex; align-items: center; gap: 14px; width: min(420px, 100%); margin-top: 34px; padding: 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; background: rgba(255,255,255,.075); backdrop-filter: blur(12px); }
-.auth-trust-preview > img { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; }.auth-trust-preview > div { display: flex; flex-direction: column; gap: 4px; }.auth-trust-preview strong { font-size: 12px; }.auth-trust-preview span, .auth-trust-preview small { display: flex; align-items: center; gap: 5px; color: #88ddd6; font-size: 9px; }.auth-trust-preview small { color: #a8bbc7; }
+.auth-trust-list { display: grid; grid-template-columns: 1fr; gap: 10px; }.auth-trust-list > span { display: flex; align-items: center; gap: 10px; color: #91ddd7; font-size: 10px; }.auth-trust-list b { color: white; font-weight: 650; }
 .auth-promise { display: flex; align-items: center; gap: 8px; margin: 0; color: #96acba; font-size: 9px; }
 .auth-right { padding: 50px clamp(24px, 6vw, 92px); background: #fff; }
 .auth-card { max-width: 480px; }.auth-card h1 { font-size: 34px; letter-spacing: -2px; }.auth-sub { margin-bottom: 30px; font-size: 13px; }
@@ -583,7 +613,8 @@
 
 /* Landing: use the real route and runner imagery */
 .hero-scene { border-radius: 32px; background: #edf7f6; transform: none; }
-.hero-map-image { z-index: 0; object-fit: cover; opacity: .62; }
+.hero-map-image { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; border: 0; opacity: .58; }
+.trust-row-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; color: var(--teal); background: var(--teal-soft); }
 .runner-card, .task-card { z-index: 2; }.runner-avatar-image { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
 .safety-cards .reveal:nth-child(even) { transform: translateY(23px); }.safety-cards .reveal-visible:nth-child(even) { transform: translateY(23px); }
 .safety-cards .reveal article { height: 100%; }
@@ -604,7 +635,7 @@
   .concierge-intro h1 { font-size: 44px; letter-spacing: -3px; }
   .request-options { grid-template-columns: 1fr; }
   .active-route-layout { grid-template-columns: 1fr; }.active-map { height: 220px; }
-  .runner-profile-card { align-items: flex-start; }.runner-profile-card > img { width: 86px; height: 86px; }
+  .runner-profile-card { align-items: flex-start; }.runner-real-avatar { width: 86px; height: 86px; }
   .auth-shell { grid-template-columns: 1fr; }.auth-left { display: none; }.auth-right { padding: 34px 20px; }
 }
 

@@ -64,16 +64,11 @@ export default function VerifyPage() {
       return;
     }
 
-    // 2. Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from("verifications")
-      .getPublicUrl(filePath);
-
-    // 3. Post to verify API
+    // Store only the private object path. Review links are short-lived signed URLs.
     const res = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_type: idType, id_number: idNumber, id_image_url: publicUrl }),
+      body: JSON.stringify({ id_type: idType, id_number: idNumber, id_image_url: uploadData.path }),
     });
     const data = await res.json();
     setSubmitting(false);

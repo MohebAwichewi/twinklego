@@ -20,7 +20,6 @@ import {
   Star,
   UserRoundCheck,
 } from "lucide-react";
-import Image from "next/image";
 import { WaitlistForm } from "./waitlist-form";
 import Reveal from "@/components/reveal";
 
@@ -91,22 +90,22 @@ export default function Home() {
               <a className="text-link" href="#how-it-works">See how it works <ChevronRight size={17} /></a>
             </div>
             <div className="trust-row">
-              <div className="avatars"><span>AM</span><span>KO</span><span>ZS</span></div>
+              <span className="trust-row-icon"><ShieldCheck size={20} /></span>
               <p><strong>Built for real life</strong><br />Safe, local, and made for your community.</p>
             </div>
           </div>
 
           <div className="hero-scene hero-enter hero-enter-delay" aria-label="TwinkleGo task matching preview">
-            <Image className="hero-map-image" src="/images/live-route-map.webp" alt="A live TwinkleGo route between a runner and customer" fill sizes="(max-width: 900px) 100vw, 50vw" priority />
+            <iframe className="hero-map-image" title="OpenStreetMap of Victoria Island, Lagos" src="https://www.openstreetmap.org/export/embed.html?bbox=3.405%2C6.415%2C3.44%2C6.445&layer=mapnik&marker=6.4281%2C3.4219" loading="eager" />
             <div className="runner-card">
-              <Image className="runner-avatar-image" src="/images/verified-runner-kunle.webp" alt="Kunle, verified runner" width={48} height={48} />
-              <div><strong>Kunle is nearby</strong><small>Verified runner · 4.9 <Star size={11} fill="currentColor" /></small></div>
-              <span className="live-dot">Available</span>
+              <div className="runner-avatar"><BadgeCheck size={20} /></div>
+              <div><strong>Real verified runners</strong><small>Shown from live availability and GPS</small></div>
+              <span className="live-dot">Live data</span>
             </div>
             <div className="task-card">
               <span className="task-icon"><ShoppingBag size={22} /></span>
-              <div><small>Your request</small><strong>Pick up groceries</strong><p><MapPin size={12} /> 8 min away</p></div>
-              <span className="task-status"><Check size={14} /> Matched</span>
+              <div><small>Post a real task</small><strong>Choose addresses from the map</strong><p><MapPin size={12} /> Distance and price calculate automatically</p></div>
+              <span className="task-status"><Check size={14} /> Ready to request</span>
             </div>
           </div>
         </div>

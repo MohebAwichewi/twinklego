@@ -29,6 +29,9 @@ export async function POST(request: Request) {
   if (!id_type || !id_number) {
     return NextResponse.json({ error: "ID type and number are required." }, { status: 400 });
   }
+  if (typeof id_image_url !== "string" || !id_image_url.startsWith(`${user.id}/`)) {
+    return NextResponse.json({ error: "Upload a valid ID document before submitting." }, { status: 400 });
+  }
 
   const { data, error } = await supabase
     .from("verifications")

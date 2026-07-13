@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Users, ListChecks, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Loader2, Users, ListChecks, ShieldCheck, AlertTriangle, Radio, CircleCheck, Banknote } from "lucide-react";
+import { formatNGN } from "@/lib/geo";
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<Record<string, number>>({});
@@ -19,8 +20,12 @@ export default function AdminOverview() {
   const cards = [
     { label: "Total Users", value: stats.total_users ?? 0, icon: Users, color: "blue" },
     { label: "Total Errands", value: stats.total_errands ?? 0, icon: ListChecks, color: "teal" },
+    { label: "Active Errands", value: stats.active_errands ?? 0, icon: Radio, color: "blue" },
+    { label: "Completed", value: stats.completed_errands ?? 0, icon: CircleCheck, color: "teal" },
     { label: "Pending Verifications", value: stats.pending_verifications ?? 0, icon: ShieldCheck, color: "gold" },
     { label: "Open Disputes", value: stats.open_disputes ?? 0, icon: AlertTriangle, color: "coral" },
+    { label: "Available Runners", value: stats.available_runners ?? 0, icon: Users, color: "blue" },
+    { label: "Completed Task Volume", value: formatNGN(stats.gross_volume ?? 0), icon: Banknote, color: "gold" },
   ];
 
   return (

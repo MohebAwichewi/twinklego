@@ -20,13 +20,11 @@ export default function SignupPage() {
   const [role, setRole] = useState<UserRole>("customer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
 
     const response = await fetch("/api/auth/signup", {
       method: "POST",
@@ -43,16 +41,6 @@ export default function SignupPage() {
     if (!response.ok) {
       setLoading(false);
       setError(result.error || "Could not create account.");
-      return;
-    }
-
-    if (result.requiresEmailConfirmation) {
-      setLoading(false);
-      setSuccess(
-        result.confirmationAlreadySent
-          ? "Your account already exists but is not confirmed. Open the first confirmation email from Supabase, then log in. No new email was requested."
-          : "Account created. Check your email to confirm it, then log in.",
-      );
       return;
     }
 
@@ -80,7 +68,7 @@ export default function SignupPage() {
           <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
         </label>
         <label>Password
-          <input type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters" />
+          <input type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" />
         </label>
 
         <fieldset className="auth-role-picker">
@@ -94,7 +82,6 @@ export default function SignupPage() {
         </fieldset>
 
         {error && <div className="auth-error">{error}</div>}
-        {success && <div className="auth-success">{success}</div>}
 
         <button type="submit" className="button auth-btn" disabled={loading}>
           {loading ? <><Loader2 size={16} className="spin" /> Creating account...</> : <>Create account <ArrowRight size={16} /></>}

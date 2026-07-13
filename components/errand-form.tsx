@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ErrandCategory } from "@/lib/types";
 import { haversineDistance, estimatePrice, formatNGN } from "@/lib/geo";
 import { ShoppingBag, PackageCheck, HeartHandshake, Clock3, MapPin, Loader2, ArrowRight, BriefcaseBusiness, Wrench } from "lucide-react";
+import AddressAutocomplete, { AddressCoordinates } from "./address-autocomplete";
 
 const categories: { value: ErrandCategory; label: string; icon: typeof ShoppingBag; color: string }[] = [
   { value: "groceries", label: "Groceries", icon: ShoppingBag, color: "coral" },
@@ -26,23 +27,37 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
   const [description, setDescription] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [dropoffAddress, setDropoffAddress] = useState("");
-  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [dropoffCoords, setDropoffCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [pickupCoords, setPickupCoords] = useState<AddressCoordinates | null>(null);
+  const [dropoffCoords, setDropoffCoords] = useState<AddressCoordinates | null>(null);
   const [detecting, setDetecting] = useState(false);
+  const [locationError, setLocationError] = useState("");
 
   useEffect(() => {
-    detectLocation();
+    const suggestedTitle = new URLSearchParams(window.location.search).get("title");
+    if (suggestedTitle) setTitle(suggestedTitle);
   }, []);
 
   function detectLocation() {
     if (!navigator.geolocation) return;
     setDetecting(true);
+    setLocationError("");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setPickupCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      async (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setPickupCoords(coords);
+        try {
+          const response = await fetch(`/api/locations/search?lat=${coords.lat}&lng=${coords.lng}`);
+          const data = await response.json();
+          if (response.ok && data[0]?.label) setPickupAddress(data[0].label);
+        } catch {
+          setLocationError("We found your coordinates but could not load the street address.");
+        }
         setDetecting(false);
       },
-      () => setDetecting(false),
+      () => {
+        setLocationError("Location access was not available. Search for the pickup address instead.");
+        setDetecting(false);
+      },
       { enableHighAccuracy: true }
     );
   }
@@ -96,18 +111,26 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
       {step === 2 && (
         <div className="form-step">
           <h3>Where?</h3>
-          <label>
-            <MapPin size={14} /> Pickup address
-            <input required value={pickupAddress} onChange={e => setPickupAddress(e.target.value)} placeholder="Where should the runner pick up?" />
-          </label>
-          {pickupCoords && <small className="coords-hint">Location detected: {pickupCoords.lat.toFixed(4)}, {pickupCoords.lng.toFixed(4)}</small>}
+          <AddressAutocomplete
+            label="Pickup address"
+            placeholder="Search for the pickup address"
+            value={pickupAddress}
+            coordinates={pickupCoords}
+            required
+            onChange={(address, coords) => { setPickupAddress(address); setPickupCoords(coords); }}
+          />
+          {pickupCoords && <small className="coords-hint">Confirmed map coordinates: {pickupCoords.lat.toFixed(5)}, {pickupCoords.lng.toFixed(5)}</small>}
           {detecting && <small className="coords-hint">Detecting location...</small>}
-          <button type="button" className="text-btn" onClick={detectLocation}>Use my current location</button>
+          {locationError && <small className="address-error">{locationError}</small>}
+          <button type="button" className="text-btn" onClick={detectLocation} disabled={detecting}>Use my current location</button>
 
-          <label>
-            <MapPin size={14} /> Dropoff address (optional)
-            <input value={dropoffAddress} onChange={e => setDropoffAddress(e.target.value)} placeholder="Where should it be delivered?" />
-          </label>
+          <AddressAutocomplete
+            label="Dropoff address (optional)"
+            placeholder="Search for the delivery address"
+            value={dropoffAddress}
+            coordinates={dropoffCoords}
+            onChange={(address, coords) => { setDropoffAddress(address); setDropoffCoords(coords); }}
+          />
 
           {distance !== null && (
             <div className="distance-estimate">
@@ -118,7 +141,7 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
 
           <div className="form-step-actions">
             <button type="button" className="text-btn" onClick={() => setStep(1)}>Back</button>
-            <button type="button" className="button" onClick={() => setStep(3)} disabled={!pickupAddress}>
+            <button type="button" className="button" onClick={() => setStep(3)} disabled={!pickupAddress || !pickupCoords || (Boolean(dropoffAddress) && !dropoffCoords)}>
               Next: Review <ArrowRight size={16} />
             </button>
           </div>

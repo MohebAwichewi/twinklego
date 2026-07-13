@@ -30,6 +30,8 @@ export interface Profile {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   is_admin: boolean;
+  is_super_admin: boolean;
+  is_suspended: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -69,6 +71,17 @@ export interface Errand {
   customer?: Profile;
   assigned_runner?: Profile;
   tracking?: TaskTracking;
+}
+
+export interface AdminAuditLog {
+  id: number;
+  actor_id: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  actor?: Pick<Profile, "id" | "full_name">;
 }
 
 export interface TaskTracking {

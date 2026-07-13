@@ -57,6 +57,13 @@ export async function PATCH(
   const lat = body.lat === undefined ? null : Number(body.lat);
   const lng = body.lng === undefined ? null : Number(body.lng);
 
+  if ((lat === null) !== (lng === null)) {
+    return NextResponse.json({ error: "Provide both latitude and longitude." }, { status: 400 });
+  }
+  if (lat !== null && lng !== null && (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180)) {
+    return NextResponse.json({ error: "Invalid runner coordinates." }, { status: 400 });
+  }
+
   const { data: errand, error: errandError } = await supabase
     .from("errands")
     .select("*")
@@ -100,7 +107,7 @@ export async function PATCH(
     updated_at: new Date().toISOString(),
   };
 
-  if (lat && lng) {
+  if (lat !== null && lng !== null && Number.isFinite(lat) && Number.isFinite(lng)) {
     updates.runner_lat = lat;
     updates.runner_lng = lng;
     updates.last_location_at = new Date().toISOString();
@@ -143,7 +150,7 @@ function calculateTrackingMetrics(
       ? { lat: Number(errand.pickup_lat), lng: Number(errand.pickup_lng) }
       : { lat: Number(errand.dropoff_lat ?? errand.pickup_lat), lng: Number(errand.dropoff_lng ?? errand.pickup_lng) };
 
-  if (!lat || !lng || !Number.isFinite(destination.lat) || !Number.isFinite(destination.lng)) {
+  if (lat === null || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(destination.lat) || !Number.isFinite(destination.lng)) {
     return { distanceToNextKm: null, etaMinutes: null };
   }
 

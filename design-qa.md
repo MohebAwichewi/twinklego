@@ -23,7 +23,7 @@ The selected source is a signed-in dashboard. The browser can render the redesig
   Location: Supabase project configuration and Vercel `SUPABASE_SERVICE_ROLE_KEY`.
   Evidence: the deployed health endpoint reports `hasServiceRoleKey: true` but `hasValidServiceRoleKey: false`; public signup returns HTTP 429 after the project email quota is exhausted.
   Impact: new users cannot reliably create a confirmed account, log in, or reach the dashboard.
-  Fix: create a Supabase `sb_secret_...` key, replace `SUPABASE_SERVICE_ROLE_KEY` in Vercel Production and Preview, then redeploy.
+  Fix: create a Supabase `sb_secret_...` key, replace `SUPABASE_SERVICE_ROLE_KEY` in Vercel Production and Preview, apply `supabase.sql`, then redeploy.
 
 - [P1] Selected dashboard cannot pass visual QA without a real authenticated session
   Location: `/dashboard` and all signed-in routes.

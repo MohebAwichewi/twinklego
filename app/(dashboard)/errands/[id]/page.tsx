@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Errand, TaskTracking, TaskTrackingPhase } from "@/lib/types";
 import { formatNGN } from "@/lib/geo";
@@ -217,10 +216,19 @@ export default function ErrandDetailPage() {
               </div>
 
               <div className="tracking-map-preview">
-                <Image src="/images/live-route-map.webp" alt="Live task route from pickup to delivery" width={720} height={420} />
+                {trackingMapCoordinates(errand, tracking) ? (
+                  <iframe
+                    title="Live task location"
+                    src={trackingMapUrl(trackingMapCoordinates(errand, tracking)!)}
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                ) : (
+                  <div className="tracking-map-empty"><MapPin size={24} /><span>Map appears when task coordinates are available.</span></div>
+                )}
                 <div className="tracking-map-status">
-                  <span><span className="tracking-pulse" /> Runner location updating</span>
-                  <strong>{tracking?.eta_minutes ? `${tracking.eta_minutes} min away` : "ETA available when GPS starts"}</strong>
+                  <span><span className="tracking-pulse" /> {tracking?.last_location_at ? `GPS updated ${new Date(tracking.last_location_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Waiting for runner GPS"}</span>
+                  <strong>{tracking?.eta_minutes ? `${tracking.eta_minutes} min ETA` : "ETA pending"}</strong>
                 </div>
               </div>
 
@@ -345,7 +353,11 @@ export default function ErrandDetailPage() {
             <div className="detail-card">
               <h3>Runner</h3>
               <div className="user-mini">
-                <Image className="avatar-sm runner-photo-sm" src="/images/verified-runner-kunle.webp" alt="Verified TwinkleGo runner" width={42} height={42} />
+                {errand.assigned_runner.avatar_url ? (
+                  <img className="avatar-sm runner-photo-sm" src={errand.assigned_runner.avatar_url} alt={errand.assigned_runner.full_name || "Assigned runner"} />
+                ) : (
+                  <div className="avatar-sm">{errand.assigned_runner.full_name?.[0]?.toUpperCase() || <User size={14} />}</div>
+                )}
                 <div>
                   <strong>{errand.assigned_runner.full_name}</strong>
                   <small>{errand.assigned_runner.rating} ★ ({errand.assigned_runner.rating_count})</small>
@@ -371,4 +383,18 @@ function trackingLine(phase: TaskTrackingPhase, tracking: TaskTracking | null, f
   }
 
   return fallback;
+}
+
+function trackingMapCoordinates(errand: Errand, tracking: TaskTracking | null) {
+  const lat = tracking?.runner_lat ?? errand.pickup_lat ?? errand.dropoff_lat;
+  const lng = tracking?.runner_lng ?? errand.pickup_lng ?? errand.dropoff_lng;
+  return lat !== null && lat !== undefined && lng !== null && lng !== undefined
+    ? { lat: Number(lat), lng: Number(lng) }
+    : null;
+}
+
+function trackingMapUrl({ lat, lng }: { lat: number; lng: number }) {
+  const delta = 0.009;
+  const bbox = [lng - delta, lat - delta, lng + delta, lat + delta].join(",");
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${lat}%2C${lng}`;
 }
