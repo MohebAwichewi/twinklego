@@ -31,10 +31,10 @@ const tasks = [
 ];
 
 const steps = [
-  { number: "01", title: "Request help", text: "Tell us what you need and where.", icon: Sparkles },
+  { number: "01", title: "Request and pay", text: "Tell us what you need and pay securely through TwinkleGo.", icon: Sparkles },
   { number: "02", title: "Get matched", text: "Connect with a nearby verified runner.", icon: UserRoundCheck },
   { number: "03", title: "Task completed", text: "Follow progress and stay in touch.", icon: CircleCheck },
-  { number: "04", title: "Payment released", text: "Pay securely once everything is done.", icon: Banknote },
+  { number: "04", title: "Runner payout released", text: "Confirm completion and TwinkleGo sends the runner payout.", icon: Banknote },
 ];
 
 const safety = [
@@ -99,8 +99,8 @@ export default function Home() {
             <iframe className="hero-map-image" title="OpenStreetMap of Victoria Island, Lagos" src="https://www.openstreetmap.org/export/embed.html?bbox=3.405%2C6.415%2C3.44%2C6.445&layer=mapnik&marker=6.4281%2C3.4219" loading="eager" />
             <div className="runner-card">
               <div className="runner-avatar"><BadgeCheck size={20} /></div>
-              <div><strong>Real verified runners</strong><small>Shown from live availability and GPS</small></div>
-              <span className="live-dot">Live data</span>
+              <div><strong>Verified matching</strong><small>Only approved profiles can transact</small></div>
+              <span className="live-dot">Trust first</span>
             </div>
             <div className="task-card">
               <span className="task-icon"><ShoppingBag size={22} /></span>
@@ -122,12 +122,12 @@ export default function Home() {
           <Reveal className="earn-visual">
             <div className="phone">
               <div className="phone-top"><Logo /></div>
-              <div className="phone-greeting"><span>Good morning, Tolu</span><strong>Ready to earn nearby?</strong></div>
-              <div className="availability"><span><i /> Available mode</span><b /></div>
-              <div className="mini-task"><span className="coral"><ShoppingBag size={19} /></span><div><strong>Market pickup</strong><small>1.2 km away · 35 min</small></div><b>₦3,500</b></div>
-              <div className="mini-task"><span className="teal"><PackageCheck size={19} /></span><div><strong>Deliver a parcel</strong><small>On your way · 20 min</small></div><b>₦2,200</b></div>
+              <div className="phone-greeting"><span>Runner mode</span><strong>Earn on your own schedule</strong></div>
+              <div className="availability"><span><i /> Control your availability</span><b /></div>
+              <div className="mini-task"><span className="coral"><ShoppingBag size={19} /></span><div><strong>Paid opportunities</strong><small>Only provider-confirmed tasks appear</small></div><b><ShieldCheck size={17} /></b></div>
+              <div className="mini-task"><span className="teal"><PackageCheck size={19} /></span><div><strong>Live task progress</strong><small>Update status and location in one place</small></div><b><Navigation size={17} /></b></div>
             </div>
-            <div className="earn-bubble"><Banknote size={20} /><span><small>Earned today</small><strong>₦8,400</strong></span></div>
+            <div className="earn-bubble"><Banknote size={20} /><span><small>Runner payout</small><strong>After confirmation</strong></span></div>
           </Reveal>
           <Reveal className="section-copy" delay={100}>
             <div className="eyebrow"><span><Banknote size={14} /></span> Your time, your choice</div>

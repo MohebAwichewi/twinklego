@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TwinkleGo">
+  <defs>
+    <linearGradient id="brand" x1="80" y1="72" x2="438" y2="446" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2789d8"/>
+      <stop offset="1" stop-color="#31b7b5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#eef9f8"/>
+  <path d="M122 345c40-69 84-121 143-157 40-24 81-35 120-31-27 18-47 41-59 71-19 46-15 94 10 143-54 17-102 13-144-10-26-14-49-20-70-16Z" fill="url(#brand)"/>
+  <circle cx="157" cy="228" r="42" fill="#2789d8"/>
+  <path d="M337 74c9 44 31 66 75 75-44 9-66 31-75 75-9-44-31-66-75-75 44-9 66-31 75-75Z" fill="#31b7b5"/>
+  <path d="M402 253c5 25 18 38 43 43-25 5-38 18-43 43-5-25-18-38-43-43 25-5 38-18 43-43Z" fill="#f0b84c"/>
+</svg>

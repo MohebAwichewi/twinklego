@@ -10,7 +10,7 @@ export async function GET() {
   const [users, errands, active, completed, verifications, disputes, runners, completedValues] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("errands").select("id", { count: "exact", head: true }),
-    admin.from("errands").select("id", { count: "exact", head: true }).in("status", ["posted", "accepted", "in_progress"]),
+    admin.from("errands").select("id", { count: "exact", head: true }).in("status", ["posted", "accepted", "in_progress", "awaiting_confirmation", "payout_pending"]),
     admin.from("errands").select("id", { count: "exact", head: true }).eq("status", "completed"),
     admin.from("verifications").select("id", { count: "exact", head: true }).eq("status", "pending"),
     admin.from("disputes").select("id", { count: "exact", head: true }).in("status", ["open", "investigating"]),

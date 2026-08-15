@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Verification } from "@/lib/types";
 import { ArrowLeft, Upload, Loader2, ShieldCheck, BadgeCheck, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +15,7 @@ const idTypes = [
 ];
 
 export default function VerifyPage() {
+  const searchParams = useSearchParams();
   const [verification, setVerification] = useState<Verification | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -97,6 +99,13 @@ export default function VerifyPage() {
         </div>
       </div>
 
+      {searchParams.get("onboarding") === "1" && !verification ? (
+        <div className="verification-onboarding-note">
+          <span>2</span>
+          <div><small>Account created - next step</small><strong>Verify once, then transact safely</strong><p>You can explore TwinkleGo now, but posting, accepting, and payments stay locked until an admin approves your identity.</p></div>
+        </div>
+      ) : null}
+
       {statusInfo && (
         <div className={`verify-banner ${statusInfo.cls}`}>
           <statusInfo.icon size={22} />
@@ -112,6 +121,14 @@ export default function VerifyPage() {
           <ShieldCheck size={48} />
           <h2>You&apos;re all set!</h2>
           <p>Your identity has been verified. You can now post errands and accept tasks.</p>
+          <Link href="/dashboard" className="button">Continue to TwinkleGo</Link>
+        </div>
+      ) : verification?.status === "pending" ? (
+        <div className="verify-done verify-reviewing">
+          <Clock size={48} />
+          <h2>Your ID is with the review team</h2>
+          <p>You cannot participate in transactions until an admin approves it. Your status will update here and on Home.</p>
+          <Link href="/dashboard" className="button button-outline">Return home</Link>
         </div>
       ) : (
         <div className="verify-form-card">

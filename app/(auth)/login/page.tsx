@@ -17,12 +17,18 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let error: Error | null = null;
+    try {
+      const result = await supabase.auth.signInWithPassword({ email, password });
+      error = result.error;
+    } catch {
+      error = new Error("Account services are temporarily unreachable. Please try again shortly.");
+    }
     setLoading(false);
     if (error) {
       setError(
         error.message.toLowerCase().includes("email not confirmed")
-          ? "Confirm your email using the link Supabase sent you, then log in."
+          ? "This older account still needs activation. Create the account again with the same email and password to activate it."
           : error.message,
       );
       return;
@@ -33,9 +39,13 @@ export default function LoginPage() {
   async function handleForgotPassword() {
     if (!email) { setError("Enter your email first."); return; }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/api/auth/callback?next=/profile`,
-    });
+    let error: Error | null = null;
+    try {
+      const result = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/api/auth/callback?next=/profile` });
+      error = result.error;
+    } catch {
+      error = new Error("Password reset services are temporarily unreachable. Please try again shortly.");
+    }
     setLoading(false);
     if (error) { setError(error.message); return; }
     setSuccess("Password reset link sent to your email.");

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { Profile, Verification } from "@/lib/types";
-import { Save, ShieldCheck, Loader2, User, Phone, MapPin, AlertTriangle, BadgeCheck, Clock, XCircle } from "lucide-react";
+import { Save, ShieldCheck, Loader2, User, Phone, MapPin, AlertTriangle, BadgeCheck, Clock, XCircle, ArrowRight, Building2 } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -81,10 +81,18 @@ export default function ProfilePage() {
           <h1>Profile</h1>
           <p>Manage your personal information and verification status</p>
         </div>
-        <Link href="/profile/verify" className="button button-small">
-          <ShieldCheck size={16} /> Verify identity
-        </Link>
+        <Link href={profile?.is_verified ? "/profile/verify" : "/profile/verify?onboarding=1"} className="button button-small"><ShieldCheck size={16} /> {profile?.is_verified ? "Verification status" : "Get verified"}</Link>
       </div>
+
+      <section className={`profile-verification-spotlight ${profile?.is_verified ? "verified" : verification?.status || "unverified"}`}>
+        <span>{profile?.is_verified ? <BadgeCheck size={27} /> : verification?.status === "pending" ? <Clock size={27} /> : <ShieldCheck size={27} />}</span>
+        <div>
+          <small>Transaction access</small>
+          <h2>{profile?.is_verified ? "Identity verified" : verification?.status === "pending" ? "Verification under review" : "Verification required"}</h2>
+          <p>{profile?.is_verified ? "You can request paid help and accept tasks." : verification?.status === "pending" ? "An admin must approve your ID before you can post, accept, or complete transactions." : "Submit a government ID before you can request help, earn, or exchange money through TwinkleGo."}</p>
+        </div>
+        <Link href="/profile/verify">{profile?.is_verified ? "View status" : verification?.status === "pending" ? "Check submission" : "Start verification"} <ArrowRight size={15} /></Link>
+      </section>
 
       <div className="profile-grid">
         <div className="profile-card">
@@ -145,6 +153,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-sidebar">
+          {(profile?.role === "runner" || profile?.role === "both") ? (
+            <Link href="/profile/payout" className="info-card profile-payout-link">
+              <span><Building2 size={20} /></span>
+              <div><h3>Runner payouts</h3><p>Add the verified bank account where task earnings should be sent.</p></div>
+              <ArrowRight size={16} />
+            </Link>
+          ) : null}
           <div className="info-card">
             <h3>Account info</h3>
             <dl>

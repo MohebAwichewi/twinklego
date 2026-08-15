@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Bell, User, Sparkles, House, ClipboardList, Wallet, Users, ShieldCheck, Menu, X, LogOut, Shield } from "lucide-react";
+import { Bell, User, Sparkles, House, ClipboardList, ReceiptText, HandCoins, ShieldCheck, Menu, X, LogOut, Shield, PlusCircle } from "lucide-react";
 import { Notification, Profile } from "@/lib/types";
 import Link from "next/link";
 import AvailabilityToggle from "./availability-toggle";
@@ -10,10 +10,18 @@ import { createClient } from "@/lib/supabase";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: House },
-  { href: "/errands", label: "Requests", icon: ClipboardList },
-  { href: "/runners", label: "Runners", icon: Users },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/profile", label: "Trust & profile", icon: ShieldCheck },
+  { href: "/errands/new", label: "Request help", icon: PlusCircle },
+  { href: "/errands?tab=posted", matchHref: "/errands", label: "Earn", icon: HandCoins },
+  { href: "/wallet", label: "Payments", icon: ReceiptText },
+  { href: "/profile", label: "Profile", icon: User },
+];
+
+const mobileItems = [
+  { href: "/dashboard", label: "Home", icon: House },
+  { href: "/errands/new", label: "Request", icon: PlusCircle },
+  { href: "/errands?tab=posted", matchHref: "/errands", label: "Earn", icon: ClipboardList },
+  { href: "/profile/verify", label: "Verify", icon: ShieldCheck },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 export default function Topbar({ profile }: { profile: Profile | null }) {
@@ -53,8 +61,8 @@ export default function Topbar({ profile }: { profile: Profile | null }) {
       </Link>
 
       <nav className={`app-nav ${menuOpen ? "app-nav-open" : ""}`} aria-label="App navigation">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+        {navItems.map(({ href, matchHref, label, icon: Icon }) => {
+          const active = isNavActive(pathname, href, matchHref);
           return (
             <Link key={href} href={href} className={active ? "active" : ""} onClick={() => setMenuOpen(false)}>
               <Icon size={17} /><span>{label}</span>
@@ -65,6 +73,7 @@ export default function Topbar({ profile }: { profile: Profile | null }) {
       </nav>
 
       <div className="topbar-right">
+        {!profile?.is_verified ? <Link href="/profile/verify" className="verification-chip"><ShieldCheck size={15} /><span>Get verified</span></Link> : null}
         {(profile?.role === "runner" || profile?.role === "both") && <AvailabilityToggle />}
 
         <div className="notif-wrap" ref={panelRef}>
@@ -109,6 +118,20 @@ export default function Topbar({ profile }: { profile: Profile | null }) {
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
+
+      <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation">
+        {mobileItems.map(({ href, matchHref, label, icon: Icon }) => {
+          const active = isNavActive(pathname, href, matchHref);
+          return <Link key={href} href={href} className={active ? "active" : ""}><Icon size={19} /><span>{label}</span>{label === "Verify" && !profile?.is_verified ? <i /> : null}</Link>;
+        })}
+      </nav>
     </header>
   );
+}
+
+function isNavActive(pathname: string, href: string, matchHref?: string) {
+  if (matchHref) return pathname === matchHref;
+  if (href === "/profile/verify") return pathname.startsWith("/profile/verify");
+  if (href === "/profile") return pathname === "/profile" || pathname.startsWith("/profile/payout");
+  return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 }

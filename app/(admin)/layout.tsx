@@ -2,7 +2,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  LayoutDashboard, ShieldCheck, AlertTriangle, Users, Sparkles, ArrowLeft, ClipboardList, ScrollText,
+  LayoutDashboard, ShieldCheck, AlertTriangle, Users, Sparkles, ArrowLeft, ClipboardList, ScrollText, CreditCard,
 } from "lucide-react";
 
 const adminNav = [
@@ -10,6 +10,7 @@ const adminNav = [
   { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/disputes", label: "Disputes", icon: AlertTriangle },
   { href: "/admin/errands", label: "All Errands", icon: ClipboardList },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
 ];

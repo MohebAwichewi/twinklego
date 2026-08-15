@@ -24,8 +24,10 @@ export async function PATCH(request: Request) {
 
   const { id, action } = await request.json();
   if (!id || action !== "cancel") return NextResponse.json({ error: "Supported action: cancel." }, { status: 400 });
-  const { data: existing } = await admin.from("errands").select("status").eq("id", id).single();
+  const { data: existing } = await admin.from("errands").select("status, payment:errand_payments(status)").eq("id", id).single();
   if (!existing || ["completed", "cancelled"].includes(existing.status)) return NextResponse.json({ error: "This task can no longer be cancelled." }, { status: 409 });
+  const payment = Array.isArray(existing.payment) ? existing.payment[0] : existing.payment;
+  if (payment?.status === "paid") return NextResponse.json({ error: "Paid tasks require a Paystack refund or dispute resolution before cancellation." }, { status: 409 });
 
   const { data, error } = await admin.from("errands").update({ status: "cancelled" }).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

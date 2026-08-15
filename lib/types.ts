@@ -1,8 +1,20 @@
 export type UserRole = "customer" | "runner" | "both";
 export type ErrandCategory = "groceries" | "delivery" | "home_help" | "errand" | "temporary_job" | "service_request";
-export type ErrandStatus = "posted" | "accepted" | "in_progress" | "completed" | "cancelled" | "disputed";
+export type ErrandStatus =
+  | "awaiting_payment"
+  | "payment_failed"
+  | "posted"
+  | "accepted"
+  | "in_progress"
+  | "awaiting_confirmation"
+  | "payout_pending"
+  | "completed"
+  | "cancelled"
+  | "disputed";
 export type VerificationStatus = "pending" | "approved" | "rejected";
 export type TransactionType = "deposit" | "withdrawal" | "payment" | "earning" | "refund";
+export type PaymentStatus = "initializing" | "pending" | "paid" | "failed" | "refunded";
+export type PayoutStatus = "pending" | "processing" | "otp_required" | "success" | "failed" | "reversed";
 export type DisputeStatus = "open" | "investigating" | "resolved";
 export type DisputeCategory = "service_issue" | "no_show" | "safety_concern" | "other";
 export type TaskTrackingPhase =
@@ -64,6 +76,12 @@ export interface Errand {
   status: ErrandStatus;
   price: number;
   distance_km: number | null;
+  estimated_minutes: number | null;
+  complexity: "simple" | "standard" | "heavy";
+  urgency: "flexible" | "standard" | "urgent";
+  stop_count: number;
+  commission_amount: number;
+  runner_earning: number;
   assigned_runner_id: string | null;
   completed_at: string | null;
   created_at: string;
@@ -71,6 +89,67 @@ export interface Errand {
   customer?: Profile;
   assigned_runner?: Profile;
   tracking?: TaskTracking;
+  payment?: Pick<ErrandPayment, "status" | "amount" | "currency" | "paid_at">;
+  payout?: Pick<RunnerPayout, "status" | "amount" | "paid_at">;
+}
+
+export interface ErrandPayment {
+  id: number;
+  errand_id: number;
+  customer_id: string;
+  provider: "paystack";
+  provider_reference: string;
+  authorization_url: string | null;
+  access_code: string | null;
+  amount: number;
+  currency: "NGN";
+  status: PaymentStatus;
+  commission_amount: number;
+  runner_payout_amount: number;
+  paid_at: string | null;
+  refund_status: "pending" | "processing" | "needs_attention" | "processed" | "failed" | null;
+  refund_reference: string | null;
+  refunded_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RunnerPayoutAccount {
+  id: number;
+  user_id: string;
+  provider: "paystack";
+  recipient_code: string;
+  account_name: string;
+  bank_name: string;
+  account_last4: string;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RunnerPayout {
+  id: number;
+  errand_id: number;
+  runner_id: string;
+  provider: "paystack";
+  provider_reference: string;
+  provider_transfer_code: string | null;
+  amount: number;
+  currency: "NGN";
+  status: PayoutStatus;
+  failure_reason: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskMessage {
+  id: number;
+  errand_id: number;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  sender?: Pick<Profile, "id" | "full_name" | "avatar_url">;
 }
 
 export interface AdminAuditLog {

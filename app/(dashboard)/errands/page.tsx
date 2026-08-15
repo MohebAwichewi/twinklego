@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Errand } from "@/lib/types";
 import { formatNGN } from "@/lib/geo";
 import { ListChecks, Loader2, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-const tabs = ["all", "posted", "accepted", "in_progress", "completed", "cancelled"] as const;
+const tabs = ["all", "awaiting_payment", "posted", "accepted", "in_progress", "awaiting_confirmation", "payout_pending", "completed", "cancelled"] as const;
 
 export default function ErrandsPage() {
+  const searchParams = useSearchParams();
   const [errands, setErrands] = useState<Errand[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<typeof tabs[number]>("all");
+  const requestedTab = searchParams.get("tab");
+  const initialTab = tabs.includes(requestedTab as typeof tabs[number]) ? requestedTab as typeof tabs[number] : "all";
+  const [tab, setTab] = useState<typeof tabs[number]>(initialTab);
 
   useEffect(() => {
     fetch("/api/errands").then(r => r.json()).then(data => {
@@ -28,10 +32,10 @@ export default function ErrandsPage() {
     <div className="dash-page">
       <div className="dash-page-head">
         <div>
-          <h1>My Errands</h1>
-          <p>Track and manage all your errands</p>
+          <h1>Tasks & Opportunities</h1>
+          <p>Manage your requests and find paid tasks open to verified runners.</p>
         </div>
-        <Link href="/errands/new" className="button"><PlusCircle size={16} /> Post New</Link>
+        <Link href="/errands/new" className="button"><PlusCircle size={16} /> Request Help</Link>
       </div>
 
       <div className="tab-bar">
@@ -41,7 +45,7 @@ export default function ErrandsPage() {
             className={`tab-btn ${tab === t ? "active" : ""}`}
             onClick={() => setTab(t)}
           >
-            {t.replace("_", " ")}
+            {tabLabel(t)}
             {t !== "all" && <span className="tab-count">{errands.filter(e => e.status === t).length}</span>}
           </button>
         ))}
@@ -63,7 +67,7 @@ export default function ErrandsPage() {
                 <small>{e.category.replace("_", " ")} · {formatNGN(e.price)}{e.distance_km ? ` · ${e.distance_km} km` : ""}</small>
               </div>
               <div className="errand-row-side">
-                <span className={`status-badge ${e.status}`}>{e.status.replace("_", " ")}</span>
+                <span className={`status-badge ${e.status}`}>{tabLabel(e.status)}</span>
                 <time>{new Date(e.created_at).toLocaleDateString()}</time>
               </div>
             </Link>
@@ -72,4 +76,18 @@ export default function ErrandsPage() {
       )}
     </div>
   );
+}
+
+function tabLabel(status: string) {
+  return ({
+    all: "All",
+    awaiting_payment: "Needs payment",
+    posted: "Paid & open",
+    accepted: "Accepted",
+    in_progress: "In progress",
+    awaiting_confirmation: "Confirm delivery",
+    payout_pending: "Payout processing",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  } as Record<string, string>)[status] || status.replaceAll("_", " ");
 }

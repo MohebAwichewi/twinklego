@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { ErrandCategory } from "@/lib/types";
-import { haversineDistance, estimatePrice, formatNGN } from "@/lib/geo";
-import { ShoppingBag, PackageCheck, HeartHandshake, Clock3, MapPin, Loader2, ArrowRight, BriefcaseBusiness, Wrench } from "lucide-react";
+import { haversineDistance, estimateTaskPrice, formatNGN, type TaskComplexity, type TaskUrgency } from "@/lib/geo";
+import { ShoppingBag, PackageCheck, HeartHandshake, Clock3, Loader2, ArrowRight, BriefcaseBusiness, Wrench, ShieldCheck, Timer, Route } from "lucide-react";
 import AddressAutocomplete, { AddressCoordinates } from "./address-autocomplete";
 
 const categories: { value: ErrandCategory; label: string; icon: typeof ShoppingBag; color: string }[] = [
@@ -29,6 +29,9 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [pickupCoords, setPickupCoords] = useState<AddressCoordinates | null>(null);
   const [dropoffCoords, setDropoffCoords] = useState<AddressCoordinates | null>(null);
+  const [complexity, setComplexity] = useState<TaskComplexity>("standard");
+  const [urgency, setUrgency] = useState<TaskUrgency>("standard");
+  const [stopCount, setStopCount] = useState(0);
   const [detecting, setDetecting] = useState(false);
   const [locationError, setLocationError] = useState("");
 
@@ -65,7 +68,13 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
   const distance = pickupCoords && dropoffCoords
     ? Math.round(haversineDistance(pickupCoords.lat, pickupCoords.lng, dropoffCoords.lat, dropoffCoords.lng) * 100) / 100
     : null;
-  const price = distance ? estimatePrice(distance) : 0;
+  const pricing = estimateTaskPrice({
+    distanceKm: distance ?? 0,
+    category,
+    complexity,
+    urgency,
+    stopCount,
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +83,8 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
       pickup_address: pickupAddress, dropoff_address: dropoffAddress,
       pickup_lat: pickupCoords?.lat, pickup_lng: pickupCoords?.lng,
       dropoff_lat: dropoffCoords?.lat, dropoff_lng: dropoffCoords?.lng,
-      price, distance_km: distance,
+      complexity, urgency, stop_count: stopCount,
+      price: pricing.customerTotal, distance_km: distance,
     });
   }
 
@@ -132,10 +142,54 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
             onChange={(address, coords) => { setDropoffAddress(address); setDropoffCoords(coords); }}
           />
 
-          {distance !== null && (
-            <div className="distance-estimate">
-              <span>Estimated distance: <strong>{distance} km</strong></span>
-              <span>Estimated price: <strong>{formatNGN(price)}</strong></span>
+          <div className="task-factors">
+            <fieldset className="factor-fieldset">
+              <legend>How complex is the task?</legend>
+              <div className="factor-options">
+                {([
+                  ["simple", "Simple", "Quick pickup or handoff"],
+                  ["standard", "Standard", "Some waiting or handling"],
+                  ["heavy", "Heavy", "Bulky, careful, or demanding"],
+                ] as const).map(([value, label, description]) => (
+                  <label key={value} className={complexity === value ? "active" : ""}>
+                    <input type="radio" name="complexity" value={value} checked={complexity === value} onChange={() => setComplexity(value)} />
+                    <span><strong>{label}</strong><small>{description}</small></span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="factor-fieldset">
+              <legend>When do you need it?</legend>
+              <div className="factor-options compact">
+                {([
+                  ["flexible", "Flexible", "Best value"],
+                  ["standard", "Today", "Normal priority"],
+                  ["urgent", "Urgent", "Runner prioritizes it"],
+                ] as const).map(([value, label, description]) => (
+                  <label key={value} className={urgency === value ? "active" : ""}>
+                    <input type="radio" name="urgency" value={value} checked={urgency === value} onChange={() => setUrgency(value)} />
+                    <span><strong>{label}</strong><small>{description}</small></span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <label className="stops-control">Extra stops
+              <span>
+                <button type="button" onClick={() => setStopCount(count => Math.max(0, count - 1))} aria-label="Remove a stop">-</button>
+                <strong>{stopCount}</strong>
+                <button type="button" onClick={() => setStopCount(count => Math.min(5, count + 1))} aria-label="Add a stop">+</button>
+              </span>
+              <small>Pickup and final delivery are already included.</small>
+            </label>
+          </div>
+
+          {pickupCoords && (
+            <div className="fair-price-preview">
+              <div><span><Route size={15} /> Route</span><strong>{distance !== null ? `${distance} km` : "Local task"}</strong></div>
+              <div><span><Timer size={15} /> Estimated time</span><strong>About {pricing.estimatedMinutes} min</strong></div>
+              <div className="fair-price-total"><span>Suggested fair price</span><strong>{formatNGN(pricing.customerTotal)}</strong><small>Typical range {formatNGN(pricing.fairRangeMin)} - {formatNGN(pricing.fairRangeMax)}</small></div>
             </div>
           )}
 
@@ -150,7 +204,8 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
 
       {step === 3 && (
         <div className="form-step">
-          <h3>Review & Post</h3>
+          <h3>Review & Pay</h3>
+          <p className="form-step-intro">Your task becomes visible to verified runners only after Paystack confirms payment.</p>
           <div className="review-card">
             <dl>
               <dt>Category</dt><dd>{category.replace("_", " ")}</dd>
@@ -158,15 +213,26 @@ export default function ErrandForm({ onSubmit, loading }: ErrandFormProps) {
               <dt>Description</dt><dd>{description || "None"}</dd>
               <dt>Pickup</dt><dd>{pickupAddress}</dd>
               <dt>Dropoff</dt><dd>{dropoffAddress || "Same as pickup"}</dd>
-              <dt>Distance</dt><dd>{distance ? `${distance} km` : "Not calculated"}</dd>
-              <dt>Price</dt><dd className="price-big">{formatNGN(price)}</dd>
+              <dt>Distance</dt><dd>{distance !== null ? `${distance} km` : "Local task"}</dd>
+              <dt>Complexity</dt><dd className="capitalize">{complexity}</dd>
+              <dt>Urgency</dt><dd className="capitalize">{urgency}</dd>
+              <dt>Extra stops</dt><dd>{stopCount}</dd>
+              <dt>Estimated time</dt><dd>About {pricing.estimatedMinutes} min</dd>
+              <dt>You pay</dt><dd className="price-big">{formatNGN(pricing.customerTotal)}</dd>
+              <dt>Runner earns</dt><dd>{formatNGN(pricing.runnerEarning)}</dd>
+              <dt>TwinkleGo trust & support</dt><dd>{formatNGN(pricing.commissionAmount)}</dd>
             </dl>
+          </div>
+
+          <div className="secure-payment-note">
+            <ShieldCheck size={20} />
+            <span><strong>Protected transaction</strong><small>Payment is confirmed before matching. Payout starts only after you confirm delivery.</small></span>
           </div>
 
           <div className="form-step-actions">
             <button type="button" className="text-btn" onClick={() => setStep(2)}>Back</button>
             <button type="submit" className="button" disabled={loading}>
-              {loading ? <><Loader2 size={16} className="spin" /> Posting...</> : <>Post Errand</>}
+              {loading ? <><Loader2 size={16} className="spin" /> Opening secure payment...</> : <>Pay securely & publish <ArrowRight size={16} /></>}
             </button>
           </div>
         </div>

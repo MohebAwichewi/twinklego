@@ -1,30 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Errand, TaskTracking, TaskTrackingPhase } from "@/lib/types";
 import { formatNGN } from "@/lib/geo";
 import { createClient } from "@/lib/supabase";
 import {
   ArrowLeft, Loader2, MapPin, Clock, CheckCircle,
   PlayCircle, XCircle, Star, AlertTriangle, User, PackageCheck,
-  Bike, Navigation, LocateFixed,
+  Bike, Navigation, LocateFixed, CreditCard, ShieldCheck, Banknote,
 } from "lucide-react";
 import Link from "next/link";
-
-const statusFlow: Record<string, string[]> = {
-  posted: ["accepted", "cancelled"],
-  accepted: ["in_progress", "cancelled"],
-  in_progress: ["completed", "disputed"],
-  completed: [],
-  cancelled: [],
-  disputed: [],
-};
+import TaskChat from "@/components/task-chat";
 
 const statusLabels: Record<string, { label: string; icon: typeof Clock; color: string }> = {
-  posted: { label: "Posted", icon: Clock, color: "gold" },
+  awaiting_payment: { label: "Awaiting Payment", icon: CreditCard, color: "gold" },
+  payment_failed: { label: "Payment Needed", icon: AlertTriangle, color: "coral" },
+  posted: { label: "Paid & Open", icon: Clock, color: "gold" },
   accepted: { label: "Accepted", icon: CheckCircle, color: "blue" },
   in_progress: { label: "In Progress", icon: PlayCircle, color: "teal" },
+  awaiting_confirmation: { label: "Confirm Delivery", icon: PackageCheck, color: "blue" },
+  payout_pending: { label: "Payout Processing", icon: Banknote, color: "teal" },
   completed: { label: "Completed", icon: CheckCircle, color: "teal" },
   cancelled: { label: "Cancelled", icon: XCircle, color: "coral" },
   disputed: { label: "Disputed", icon: AlertTriangle, color: "coral" },
@@ -45,13 +41,14 @@ const trackingSteps: {
 
 export default function ErrandDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const supabase = createClient();
-  const router = useRouter();
   const [errand, setErrand] = useState<Errand | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [tracking, setTracking] = useState<TaskTracking | null>(null);
   const [trackingError, setTrackingError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,7 +61,7 @@ export default function ErrandDetailPage() {
   }, [id, supabase]);
 
   useEffect(() => {
-    if (!errand || !["accepted", "in_progress"].includes(errand.status)) return;
+    if (!errand || !["accepted", "in_progress", "awaiting_confirmation", "payout_pending"].includes(errand.status)) return;
 
     const loadTracking = () => {
       fetch(`/api/errands/${id}/tracking`)
@@ -103,6 +100,7 @@ export default function ErrandDetailPage() {
 
   async function updateStatus(newStatus: string) {
     setUpdating(true);
+    setActionError("");
     const res = await fetch(`/api/errands/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -111,6 +109,13 @@ export default function ErrandDetailPage() {
     if (res.ok) {
       const updated = await res.json();
       setErrand(updated);
+    } else {
+      const data = await res.json();
+      setActionError(data.error || "This task could not be updated.");
+      if (data.payout_pending) {
+        const refreshed = await fetch(`/api/errands/${id}`).then(response => response.json());
+        setErrand(refreshed);
+      }
     }
     setUpdating(false);
   }
@@ -122,7 +127,9 @@ export default function ErrandDetailPage() {
     setTrackingError("");
     if (!options?.silent) setUpdating(true);
 
-    let coords = options?.lat && options?.lng ? { lat: options.lat, lng: options.lng } : null;
+    let coords = options?.lat !== undefined && options?.lng !== undefined
+      ? { lat: options.lat, lng: options.lng }
+      : null;
 
     if (!coords && navigator.geolocation) {
       coords = await new Promise<{ lat: number; lng: number } | null>(resolve => {
@@ -152,6 +159,7 @@ export default function ErrandDetailPage() {
 
   async function acceptAsRunner() {
     setUpdating(true);
+    setActionError("");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return setUpdating(false);
     const res = await fetch(`/api/errands/${id}`, {
@@ -160,7 +168,41 @@ export default function ErrandDetailPage() {
       body: JSON.stringify({ status: "accepted", assigned_runner_id: user.id }),
     });
     if (res.ok) setErrand(await res.json());
+    else {
+      const data = await res.json();
+      setActionError(data.error || "This task could not be accepted.");
+    }
     setUpdating(false);
+  }
+
+  async function startPayment() {
+    setUpdating(true);
+    setActionError("");
+    const response = await fetch("/api/payments/initialize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ errand_id: Number(id) }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setActionError(data.error || "Secure checkout could not start.");
+      setUpdating(false);
+      return;
+    }
+    if (data.paid) {
+      const refreshed = await fetch(`/api/errands/${id}`).then(result => result.json());
+      setErrand(refreshed);
+      setUpdating(false);
+      return;
+    }
+    window.location.assign(data.authorization_url);
+  }
+
+  async function markDelivered() {
+    setUpdating(true);
+    setActionError("");
+    await updateTracking("delivered", { silent: true });
+    await updateStatus("awaiting_confirmation");
   }
 
   if (loading) return <div className="dash-loading"><Loader2 size={28} className="spin" /></div>;
@@ -184,15 +226,31 @@ export default function ErrandDetailPage() {
         </span>
       </div>
 
+      {searchParams.get("payment") === "success" ? (
+        <div className="payment-success-banner"><ShieldCheck size={20} /><div><strong>Payment confirmed</strong><span>Your task is now visible to verified runners.</span></div></div>
+      ) : null}
+
+      {isCustomer && ["awaiting_payment", "payment_failed"].includes(errand.status) ? (
+        <section className="payment-protection-card">
+          <span className="payment-protection-icon"><CreditCard size={24} /></span>
+          <div>
+            <small>Protected matching</small>
+            <h2>Pay before runners can see this task</h2>
+            <p>Paystack confirms the payment first. TwinkleGo releases the runner payout only after you confirm delivery.</p>
+          </div>
+          <div className="payment-protection-total"><small>Total due</small><strong>{formatNGN(Number(errand.price))}</strong><button className="button" onClick={startPayment} disabled={updating}>{updating ? <Loader2 size={16} className="spin" /> : <ShieldCheck size={16} />} Continue to Paystack</button></div>
+        </section>
+      ) : null}
+
       {/* Status Timeline */}
       <div className="status-timeline">
-        {["posted", "accepted", "in_progress", "completed"].map((s, i) => {
-          const current = ["posted", "accepted", "in_progress", "completed"].indexOf(errand.status);
+        {["posted", "accepted", "in_progress", "awaiting_confirmation", "completed"].map((s, i) => {
+          const current = timelineIndex(errand.status);
           const done = i <= current && errand.status !== "cancelled";
           return (
-            <div key={s} className={`timeline-step ${done ? "done" : ""} ${s === errand.status ? "current" : ""}`}>
+            <div key={s} className={`timeline-step ${done ? "done" : ""} ${timelineIsCurrent(s, errand.status) ? "current" : ""}`}>
               <div className="timeline-dot" />
-              <span>{s.replace("_", " ")}</span>
+              <span>{s === "posted" ? "Paid & open" : s === "awaiting_confirmation" ? "Confirm delivery" : s === "completed" ? "Paid out" : s.replace("_", " ")}</span>
             </div>
           );
         })}
@@ -200,7 +258,7 @@ export default function ErrandDetailPage() {
 
       <div className="errand-detail-grid">
         <div className="errand-detail-main">
-          {["accepted", "in_progress", "completed"].includes(errand.status) && (
+          {["accepted", "in_progress", "awaiting_confirmation", "payout_pending", "completed"].includes(errand.status) && (
             <div className="detail-card live-tracking-card">
               <div className="tracking-head">
                 <div>
@@ -250,7 +308,7 @@ export default function ErrandDetailPage() {
                 })}
               </div>
 
-              {tracking?.runner_lat && tracking?.runner_lng && (
+              {tracking?.runner_lat !== null && tracking?.runner_lat !== undefined && tracking?.runner_lng !== null && tracking?.runner_lng !== undefined && (
                 <a
                   className="tracking-map-link"
                   href={`https://www.google.com/maps/search/?api=1&query=${tracking.runner_lat},${tracking.runner_lng}`}
@@ -284,6 +342,11 @@ export default function ErrandDetailPage() {
             <dl className="detail-meta">
               <dt>Price</dt><dd className="price-big">{formatNGN(errand.price)}</dd>
               {errand.distance_km && <><dt>Distance</dt><dd>{errand.distance_km} km</dd></>}
+              {errand.estimated_minutes ? <><dt>Estimated time</dt><dd>About {errand.estimated_minutes} min</dd></> : null}
+              <dt>Task effort</dt><dd className="capitalize">{errand.complexity || "standard"}</dd>
+              <dt>Urgency</dt><dd className="capitalize">{errand.urgency || "standard"}</dd>
+              <dt>Runner earns</dt><dd>{formatNGN(Number(errand.runner_earning || 0))}</dd>
+              <dt>TwinkleGo commission</dt><dd>{formatNGN(Number(errand.commission_amount || 0))}</dd>
             </dl>
           </div>
 
@@ -301,6 +364,8 @@ export default function ErrandDetailPage() {
             )}
           </div>
 
+          <TaskChat errandId={Number(errand.id)} userId={userId} status={errand.status} />
+
           {/* Actions */}
           <div className="detail-actions">
             {errand.status === "posted" && !isCustomer && (
@@ -314,16 +379,22 @@ export default function ErrandDetailPage() {
               </button>
             )}
             {isRunner && errand.status === "in_progress" && (
-              <button className="button" onClick={async () => { await updateTracking("delivered"); await updateStatus("completed"); }} disabled={updating}>
-                {updating ? <Loader2 size={15} className="spin" /> : <CheckCircle size={15} />} Mark complete
+              <button className="button" onClick={markDelivered} disabled={updating}>
+                {updating ? <Loader2 size={15} className="spin" /> : <CheckCircle size={15} />} Mark delivered
               </button>
             )}
-            {(isCustomer || isRunner) && ["posted", "accepted", "in_progress"].includes(errand.status) && (
+            {isCustomer && errand.status === "awaiting_confirmation" && (
+              <button className="button confirm-delivery-button" onClick={() => updateStatus("completed")} disabled={updating}>
+                {updating ? <Loader2 size={15} className="spin" /> : <ShieldCheck size={15} />} Confirm delivery & release payout
+              </button>
+            )}
+            {errand.status === "payout_pending" ? <div className="payout-pending-note"><Loader2 size={16} className="spin" /><span><strong>Payout processing</strong><small>Paystack is sending the runner&apos;s earnings. You can keep this page open or return later.</small></span></div> : null}
+            {(isCustomer || isRunner) && ["awaiting_payment", "payment_failed", "posted", "accepted", "in_progress", "awaiting_confirmation", "payout_pending"].includes(errand.status) && (
               <>
-                {errand.status !== "posted" && (
+                {["posted", "accepted", "in_progress", "awaiting_confirmation", "payout_pending"].includes(errand.status) && (
                   <Link href={`/errands/${id}/dispute`} className="text-btn danger"><AlertTriangle size={14} /> Raise dispute</Link>
                 )}
-                {isCustomer && errand.status === "posted" && (
+                {isCustomer && ["awaiting_payment", "payment_failed"].includes(errand.status) && (
                   <button className="text-btn danger" onClick={() => updateStatus("cancelled")} disabled={updating}>
                     <XCircle size={14} /> Cancel errand
                   </button>
@@ -333,6 +404,7 @@ export default function ErrandDetailPage() {
             {errand.status === "completed" && (
               <Link href={`/errands/${id}/review`} className="button"><Star size={15} /> Leave a review</Link>
             )}
+            {actionError ? <div className="auth-error action-error-wide">{actionError}</div> : null}
           </div>
         </div>
 
@@ -383,6 +455,21 @@ function trackingLine(phase: TaskTrackingPhase, tracking: TaskTracking | null, f
   }
 
   return fallback;
+}
+
+function timelineIndex(status: string) {
+  return ({
+    posted: 0,
+    accepted: 1,
+    in_progress: 2,
+    awaiting_confirmation: 3,
+    payout_pending: 3,
+    completed: 4,
+  } as Record<string, number>)[status] ?? -1;
+}
+
+function timelineIsCurrent(step: string, status: string) {
+  return step === status || (status === "payout_pending" && step === "awaiting_confirmation");
 }
 
 function trackingMapCoordinates(errand: Errand, tracking: TaskTracking | null) {

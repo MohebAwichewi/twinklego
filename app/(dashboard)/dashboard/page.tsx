@@ -6,6 +6,7 @@ import { Errand, Profile, TaskTracking } from "@/lib/types";
 import {
   ArrowRight,
   BadgeCheck,
+  Banknote,
   Bike,
   Box,
   CheckCircle2,
@@ -22,6 +23,7 @@ import {
   Star,
   Stethoscope,
   Users,
+  UserRound,
 } from "lucide-react";
 
 interface NearbyRunner {
@@ -63,7 +65,7 @@ export default function DashboardHome() {
         setProfile(profileData);
         setErrands(realErrands);
 
-        const active = realErrands.find((errand: Errand) => ["accepted", "in_progress"].includes(errand.status));
+        const active = realErrands.find((errand: Errand) => ["accepted", "in_progress", "awaiting_confirmation", "payout_pending"].includes(errand.status));
         if (active) {
           const response = await fetch(`/api/errands/${active.id}/tracking`);
           if (response.ok) setTracking(await response.json());
@@ -102,7 +104,7 @@ export default function DashboardHome() {
 
   if (loading) return <div className="dash-loading"><Loader2 size={28} className="spin" /><p>Loading your live account...</p></div>;
 
-  const activeErrand = errands.find(errand => ["accepted", "in_progress"].includes(errand.status));
+  const activeErrand = errands.find(errand => ["accepted", "in_progress", "awaiting_confirmation", "payout_pending"].includes(errand.status));
   const firstName = profile?.full_name?.split(" ")[0] || "there";
   const requestHref = query.trim() ? `/errands/new?title=${encodeURIComponent(query.trim())}` : "/errands/new";
 
@@ -113,6 +115,23 @@ export default function DashboardHome() {
           <span className="concierge-greeting">Good {greetingPeriod()}, {firstName}</span>
           <h1>What can we take off<br />your plate today?</h1>
           <p>Request help from identity-verified runners available near your real location.</p>
+        </div>
+
+        {!profile?.is_verified ? (
+          <Link href="/profile/verify" className="home-verification-callout">
+            <span><ShieldCheck size={23} /></span>
+            <div><small>Required before any transaction</small><strong>Verify your identity to request help or earn</strong><p>Your status is currently unverified. Submit a government ID for admin review.</p></div>
+            <ArrowRight size={19} />
+          </Link>
+        ) : (
+          <div className="home-verification-callout verified"><span><BadgeCheck size={23} /></span><div><small>Trust status</small><strong>You are verified</strong><p>Your account can participate in protected TwinkleGo transactions.</p></div><Link href="/profile">View profile</Link></div>
+        )}
+
+        <div className="home-priority-actions" aria-label="Primary actions">
+          <Link href="/errands/new"><span className="blue"><PlusActionIcon /></span><div><strong>Request Help</strong><small>Post and securely pay for an errand</small></div><ArrowRight size={16} /></Link>
+          <Link href="/errands?tab=posted"><span className="teal"><Banknote size={19} /></span><div><strong>Find Opportunities</strong><small>See paid tasks open to verified runners</small></div><ArrowRight size={16} /></Link>
+          <Link href="/profile/verify"><span className="gold"><ShieldCheck size={19} /></span><div><strong>{profile?.is_verified ? "Verified" : "Get Verified"}</strong><small>See identity verification status</small></div><ArrowRight size={16} /></Link>
+          <Link href="/profile"><span className="violet"><UserRound size={19} /></span><div><strong>Profile</strong><small>Account, safety, role, and payout settings</small></div><ArrowRight size={16} /></Link>
         </div>
 
         <div className="request-composer">
@@ -185,6 +204,10 @@ export default function DashboardHome() {
       </aside>
     </div>
   );
+}
+
+function PlusActionIcon() {
+  return <Sparkles size={19} />;
 }
 
 function RunnerAvatar({ runner }: { runner: NearbyRunner }) {

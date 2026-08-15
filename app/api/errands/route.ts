@@ -1,10 +1,12 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
-import { estimatePrice, haversineDistance } from "@/lib/geo";
+import { estimateTaskPrice, haversineDistance, type TaskComplexity, type TaskUrgency } from "@/lib/geo";
 import { privilegedAdminClient } from "@/lib/admin-auth";
 
 const categories = new Set(["groceries", "delivery", "home_help", "errand", "temporary_job", "service_request"]);
-const errandSelect = "*, customer:customer_id(id, full_name, avatar_url, rating, rating_count, is_verified), assigned_runner:assigned_runner_id(id, full_name, avatar_url, rating, rating_count, is_verified)";
+const errandSelect = "*, customer:customer_id(id, full_name, avatar_url, rating, rating_count, is_verified), assigned_runner:assigned_runner_id(id, full_name, avatar_url, rating, rating_count, is_verified), payment:errand_payments(status, amount, currency, paid_at), payout:payouts(status, amount, paid_at)";
+const complexities = new Set<TaskComplexity>(["simple", "standard", "heavy"]);
+const urgencies = new Set<TaskUrgency>(["flexible", "standard", "urgent"]);
 
 export async function GET() {
   const supabase = await createServerSupabase();
@@ -42,10 +44,14 @@ export async function POST(request: Request) {
   if (!validCoordinates(pickupLat, pickupLng)) return NextResponse.json({ error: "Choose a valid pickup location from the map." }, { status: 400 });
   if (dropoff_address && (!validCoordinates(dropoffLat, dropoffLng))) return NextResponse.json({ error: "Choose a valid dropoff location from the map." }, { status: 400 });
 
+  const complexity = complexities.has(body.complexity as TaskComplexity) ? body.complexity as TaskComplexity : "standard";
+  const urgency = urgencies.has(body.urgency as TaskUrgency) ? body.urgency as TaskUrgency : "standard";
+  const stopCount = Math.min(Math.max(Math.round(Number(body.stop_count) || 0), 0), 5);
+
   const distanceKm = dropoffLat !== null && dropoffLng !== null
     ? Math.round(haversineDistance(pickupLat, pickupLng, dropoffLat, dropoffLng) * 100) / 100
     : 0;
-  const price = estimatePrice(distanceKm);
+  const pricing = estimateTaskPrice({ distanceKm, category, complexity, urgency, stopCount });
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -71,9 +77,15 @@ export async function POST(request: Request) {
       dropoff_lat: dropoffLat, dropoff_lng: dropoffLng,
       pickup_address: pickup_address.trim(),
       dropoff_address: typeof dropoff_address === "string" ? dropoff_address.trim() || null : null,
-      price,
+      price: pricing.customerTotal,
       distance_km: distanceKm,
-      status: "posted",
+      estimated_minutes: pricing.estimatedMinutes,
+      complexity,
+      urgency,
+      stop_count: stopCount,
+      commission_amount: pricing.commissionAmount,
+      runner_earning: pricing.runnerEarning,
+      status: "awaiting_payment",
     })
     .select()
     .single();

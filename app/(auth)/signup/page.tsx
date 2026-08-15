@@ -26,17 +26,20 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        full_name: fullName,
-        email,
-        password,
-        role,
-      }),
-    });
-    const result = await response.json();
+    let response: Response;
+    let result: { error?: string };
+    try {
+      response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: fullName, email, password, role }),
+      });
+      result = await response.json();
+    } catch {
+      setLoading(false);
+      setError("Account services are temporarily unreachable. Please try again shortly.");
+      return;
+    }
 
     if (!response.ok) {
       setLoading(false);
@@ -44,14 +47,17 @@ export default function SignupPage() {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    let signInError: Error | null = null;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      signInError = error;
+    } catch {
+      signInError = new Error("Account created, but sign-in services are temporarily unreachable. Log in when service returns.");
+    }
 
     setLoading(false);
-    if (error) { setError(error.message); return; }
-    window.location.href = "/dashboard";
+    if (signInError) { setError(signInError.message); return; }
+    window.location.href = "/profile/verify?onboarding=1";
   }
 
   return (

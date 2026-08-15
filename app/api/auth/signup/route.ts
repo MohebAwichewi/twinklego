@@ -37,12 +37,18 @@ export async function POST(request: Request) {
   const normalizedEmail = email.trim().toLowerCase();
   const fullName = full_name.trim();
   const admin = createAdminClient();
-  const { data, error } = await admin.auth.admin.createUser({
-    email: normalizedEmail,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: fullName, role: selectedRole },
-  });
+  let createResult;
+  try {
+    createResult = await admin.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName, role: selectedRole },
+    });
+  } catch {
+    return NextResponse.json({ error: "Account services are temporarily unreachable. Please try again shortly." }, { status: 503 });
+  }
+  const { data, error } = createResult;
 
   if (error) {
     const duplicate = /already|registered|exists/i.test(error.message);

@@ -1,8 +1,10 @@
 import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabasePublicKey, getSupabaseUrl } from "./supabase-config";
 
 const url = getSupabaseUrl();
 const key = getSupabasePublicKey();
+let browserClient: SupabaseClient | undefined;
 
 if (typeof window !== "undefined" && (!url || !key)) {
   console.error(
@@ -14,6 +16,7 @@ if (typeof window !== "undefined" && (!url || !key)) {
  * Browser client - call from Client Components ("use client")
  */
 export function createClient() {
-  return createBrowserClient(url, key);
+  if (!browserClient) browserClient = createBrowserClient(url, key);
+  return browserClient;
 }
 
