@@ -132,6 +132,6 @@ export default function Topbar({ profile }: { profile: Profile | null }) {
 function isNavActive(pathname: string, href: string, matchHref?: string) {
   if (matchHref) return pathname === matchHref;
   if (href === "/profile/verify") return pathname.startsWith("/profile/verify");
-  if (href === "/profile") return pathname === "/profile" || pathname.startsWith("/profile/payout");
+  if (href === "/profile") return pathname === "/profile" || (pathname.startsWith("/profile/") && !pathname.startsWith("/profile/verify"));
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 }

@@ -1,49 +1,24 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import {
-  LayoutDashboard, ShieldCheck, AlertTriangle, Users, Sparkles, ArrowLeft, ClipboardList, ScrollText, CreditCard,
-} from "lucide-react";
-
-const adminNav = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
-  { href: "/admin/disputes", label: "Disputes", icon: AlertTriangle },
-  { href: "/admin/errands", label: "All Errands", icon: ClipboardList },
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
-];
+import AdminSidebar from "@/components/admin-sidebar";
+import RouteMotion from "@/components/route-motion";
+import TwinkleStickers from "@/components/twinkle-stickers";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("is_admin, is_super_admin, is_suspended").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, is_admin, is_super_admin, is_suspended").eq("id", user.id).single();
   if (!profile?.is_admin || profile.is_suspended) redirect("/dashboard");
 
   return (
-    <div className="dash-shell">
-      <aside className="sidebar admin-sidebar">
-        <div className="sidebar-brand">
-          <Link href="/admin" className="logo">
-            <span className="logo-mark"><Sparkles size={16} strokeWidth={2.4} /></span>
-            <span>Admin</span>
-          </Link>
-          {profile.is_super_admin ? <span className="super-admin-label">Super admin</span> : null}
-        </div>
-        <nav className="sidebar-nav">
-          {adminNav.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} className="sidebar-link"><Icon size={18} /><span>{label}</span></Link>
-          ))}
-        </nav>
-        <div className="sidebar-foot">
-          <Link href="/dashboard" className="sidebar-link"><ArrowLeft size={18} /><span>Back to app</span></Link>
-        </div>
-      </aside>
+    <div className="dash-shell admin-shell">
+      <TwinkleStickers variant="admin" />
+      <AdminSidebar isSuperAdmin={profile.is_super_admin} displayName={profile.full_name || "TwinkleGo Admin"} />
       <div className="dash-main">
-        <div className="dash-content">{children}</div>
+        <div className="admin-mobile-brand">TwinkleGo <strong>Admin</strong></div>
+        <div className="dash-content"><RouteMotion>{children}</RouteMotion></div>
       </div>
     </div>
   );

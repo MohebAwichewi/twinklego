@@ -115,6 +115,11 @@ export default function DashboardHome() {
           <span className="concierge-greeting">Good {greetingPeriod()}, {firstName}</span>
           <h1>What can we take off<br />your plate today?</h1>
           <p>Request help from identity-verified runners available near your real location.</p>
+          <div className="concierge-promise-row" aria-label="TwinkleGo benefits">
+            <span><MapPin size={14} /> Nearby</span>
+            <span><BadgeCheck size={14} /> Verified</span>
+            <span><ShieldCheck size={14} /> Payment protected</span>
+          </div>
         </div>
 
         {!profile?.is_verified ? (

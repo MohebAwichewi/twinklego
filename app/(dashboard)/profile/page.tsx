@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { Profile, Verification } from "@/lib/types";
-import { Save, ShieldCheck, Loader2, User, Phone, MapPin, AlertTriangle, BadgeCheck, Clock, XCircle, ArrowRight, Building2 } from "lucide-react";
+import { Save, ShieldCheck, Loader2, User, Phone, MapPin, AlertTriangle, BadgeCheck, Clock, XCircle, ArrowRight, Building2, KeyRound } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -153,6 +153,11 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-sidebar">
+          <Link href="/profile/security" className="info-card profile-payout-link profile-security-link">
+            <span><KeyRound size={20} /></span>
+            <div><h3>Password & security</h3><p>Change your password after confirming your current one.</p></div>
+            <ArrowRight size={16} />
+          </Link>
           {(profile?.role === "runner" || profile?.role === "both") ? (
             <Link href="/profile/payout" className="info-card profile-payout-link">
               <span><Building2 size={20} /></span>
