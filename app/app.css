@@ -734,6 +734,11 @@
 }
 
 .twinkle-stickers { position: fixed; z-index: 0; inset: 82px 0 0; overflow: hidden; pointer-events: none; }
+.sticker-art { position: absolute; opacity: .1; transform: rotate(var(--art-turn)); animation: artDrift var(--art-speed, 13s) ease-in-out infinite; }
+.sticker-art img { display: block; width: 100%; height: auto; }
+.sticker-art-cute { --art-turn: -7deg; --art-speed: 14s; right: -85px; bottom: -105px; width: clamp(245px, 23vw, 390px); opacity: .14; }
+.sticker-art-doodle { --art-turn: 5deg; --art-speed: 16s; left: -82px; top: 17%; width: clamp(170px, 15vw, 260px); opacity: .075; animation-delay: -5s; }
+.sticker-art-pop { --art-turn: 8deg; --art-speed: 15s; right: -100px; top: 7%; width: clamp(210px, 18vw, 310px); opacity: .09; animation-delay: -9s; }
 .twinkle-sticker {
   position: absolute;
   display: flex;
@@ -766,6 +771,7 @@
 .sticker-route-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(39,137,216,.28); }
 @keyframes stickerFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
 @keyframes twinklePulse { 0%, 100% { opacity: .45; transform: scale(.9) rotate(-8deg); } 50% { opacity: .9; transform: scale(1.12) rotate(4deg); } }
+@keyframes artDrift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
 
 .topbar { box-shadow: 0 8px 32px rgba(31, 79, 101, .055); }
 .topbar:after { content: ""; position: absolute; right: 6%; bottom: -1px; left: 6%; height: 2px; background: linear-gradient(90deg, transparent, rgba(39,137,216,.35), rgba(49,183,181,.4), transparent); }
@@ -838,7 +844,7 @@
 .admin-sidebar .sidebar-nav { gap: 5px; }.admin-sidebar .sidebar-link { min-height: 43px; border-radius: 12px; }.admin-sidebar .sidebar-link.active { position: relative; color: white; background: linear-gradient(90deg, rgba(49,183,181,.24), rgba(39,137,216,.12)); box-shadow: inset 3px 0 #69d5cf; }.admin-sidebar .sidebar-link.active svg { color: #79ded7; }
 .admin-sidebar .sidebar-foot { display: grid; gap: 4px; }.admin-logout { color: #ffc2b6 !important; }.admin-logout:hover { color: white !important; background: rgba(255,120,95,.14) !important; }
 .admin-mobile-brand { display: none; }.admin-kicker { display: inline-flex; margin-bottom: 7px; padding: 5px 9px; border-radius: 999px; color: #167e7b; background: #e3f7f4; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .7px; }
-.twinkle-stickers-admin { left: 270px; }.twinkle-stickers-admin .twinkle-sticker { opacity: .52; }
+.twinkle-stickers-admin { left: 270px; }.twinkle-stickers-admin .twinkle-sticker { opacity: .52; }.twinkle-stickers-admin .sticker-art { opacity: .045; }.twinkle-stickers-admin .sticker-art-cute { opacity: .075; }
 
 @media (max-width: 1320px) {
   .twinkle-sticker { opacity: .38; }.sticker-trust, .sticker-earn { display: none; }
@@ -852,6 +858,7 @@
 @media (max-width: 760px) {
   .dash-shell:before { top: 64px; mask-image: linear-gradient(90deg, #000, transparent 32%, transparent 68%, #000); }
   .twinkle-stickers { top: 64px; }.twinkle-sticker { scale: .82; opacity: .32; }.sticker-route { left: -32px; top: 13%; }.sticker-package { right: -34px; top: 31%; }.sticker-trust, .sticker-earn, .sticker-runner, .sticker-store, .sticker-route-dots { display: none; }
+  .sticker-art-doodle, .sticker-art-pop { display: none; }.sticker-art-cute { right: -72px; bottom: 3%; width: 230px; opacity: .1; }
   .concierge-intro { padding: 21px 18px 22px; border-radius: 22px; }.concierge-intro:before { right: 17px; }.concierge-promise-row { gap: 6px; }.concierge-promise-row span { font-size: 8px; }
   .dash-page-head { min-height: 105px; padding: 21px 19px; border-radius: 21px; }.dash-page-head:before { right: -25px; }.dash-page-head:after { display: none; }
   .security-hero-card, .password-form { padding: 23px; }.security-hero-card h2 { font-size: 25px; }.password-form { border-radius: 21px; }
@@ -866,6 +873,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .route-stage, .twinkle-sticker, .sticker-spark, .sticker-pin, .app-brand > span { animation: none !important; }
+  .route-stage, .twinkle-sticker, .sticker-art, .sticker-spark, .sticker-pin, .app-brand > span { animation: none !important; }
   .route-stage { opacity: 1; transform: none; filter: none; }
 }

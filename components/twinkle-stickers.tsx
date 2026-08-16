@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 
 const appStickers = [
   { className: "sticker-route", label: "Nearby", icon: Navigation },
@@ -31,6 +32,9 @@ export default function TwinkleStickers({ variant = "app" }: { variant?: "app" |
 
   return (
     <div className={`twinkle-stickers twinkle-stickers-${variant}`} aria-hidden="true">
+      <span className="sticker-art sticker-art-cute"><Image src="/stickers/cute-sticker-sheet.webp" alt="" width={700} height={700} sizes="(max-width: 760px) 230px, 23vw" /></span>
+      <span className="sticker-art sticker-art-doodle"><Image src="/stickers/doodle-sticker-sheet.webp" alt="" width={520} height={924} sizes="15vw" /></span>
+      <span className="sticker-art sticker-art-pop"><Image src="/stickers/pop-sticker-sheet.webp" alt="" width={700} height={700} sizes="18vw" /></span>
       <span className="sticker-spark sticker-spark-one"><Sparkles size={22} /></span>
       <span className="sticker-spark sticker-spark-two"><Sparkles size={15} /></span>
       <span className="sticker-pin"><MapPin size={22} /></span>
